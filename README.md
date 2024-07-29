@@ -12,6 +12,7 @@ This project focuses on understanding how bootloaders work.
 - [ ] Vendor independent first stage bootloader
 
 ### Installation
+No instalation for now :<
 
 ### To do
 - [ ] Place the code in MBR (first sector of the disk)
@@ -19,7 +20,7 @@ This project focuses on understanding how bootloaders work.
 - [ ] Setup 16-bit segment registers and stack
 - [ ] Print startup message
 - [ ] Check presence of PCI, CPUID, MSRs
-- [ ]  Enable and confirm enabled A20 line
+- [ ] Enable and confirm enabled A20 line
 - [ ] Load GDTR
 - [ ] Inform BIOS of target processor mode
 - [ ] Get memory map from BIOS
@@ -40,4 +41,3 @@ This project focuses on understanding how bootloaders work.
 - [ ] Load IDTR
 - [ ] Enable APIC and setup using information in ACPI tables
 - [ ] Setup GDT and TSS
-
