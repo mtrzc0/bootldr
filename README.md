@@ -1,5 +1,5 @@
 # bootldr
-This project focuses on understanding how bootloaders work.
+This project focuses on understanding how bootloaders work
 
 ## Core
 
