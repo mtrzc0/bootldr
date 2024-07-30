@@ -3,8 +3,8 @@ This project focuses on understanding how bootloaders work.
 
 ## Core
 
-- [ ] OS loader 
-- [ ] bootchs (aka. boot manager)
+- [ ] OS loader (Unix family) 
+- [ ] chsboot (aka. boot manager)
 - [ ] GUI
 - [ ] tools
 - [ ] config
@@ -15,10 +15,10 @@ This project focuses on understanding how bootloaders work.
 No instalation for now :<
 
 ### To do
-- [ ] Place the code in MBR (first sector of the disk)
-- [ ] Memory map detection
+- [ ] Booting Linux
+- [x] Place the code in MBR (first sector of the disk) 
 - [ ] Setup 16-bit segment registers and stack
-- [ ] Print startup message
+- [x] Print startup message
 - [ ] Check presence of PCI, CPUID, MSRs
 - [ ] Enable and confirm enabled A20 line
 - [ ] Load GDTR
