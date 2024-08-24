@@ -1,8 +1,6 @@
 %ifndef INPUT_ASM
 %define INPUT_ASM
 
-%include "macro.asm"
-
 ; writes char from string buffer which si points to
 write_char:
     mov al, [si]                    ; load char to al
