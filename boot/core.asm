@@ -16,6 +16,8 @@ mov ss, ax
 mov sp, 0x7C00
 
 call print_boot_msg
+call endl
+call print_mem_detect_msg
 hlt                                         ; halt CPU and hang here
 
 %include "io.asm"

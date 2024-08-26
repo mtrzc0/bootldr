@@ -12,11 +12,14 @@
         cmp al, 0                   ; check for null terminated string
         je %%done                   ; if true end procedure
         call write_char             ; call sub procedure
-        jmp %%repeat                 ; jump to repeat
+        jmp %%repeat                ; jump to repeat
 
 %%done:
     pop ax
     pop si
 %endmacro
+
+%define NL 0xA                      ; NL = '\n'
+%define CR 0xD                      ; CR = "enter"
 
 %endif
