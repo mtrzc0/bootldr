@@ -24,7 +24,7 @@ print_mem_detect_msg:
     ret
 
 ; DATA
-boot_msg: db "Welcome in Bootldr",0
+boot_msg: db "Bootldr Hello!",0
 mem_detect_msg: db "Detecting memory...",0
 new_line: db "",NL,CR,0
 
