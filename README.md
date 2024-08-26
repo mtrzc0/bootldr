@@ -6,10 +6,8 @@ This project focuses on understanding how bootloaders work
 - [ ] OS loader (Unix family) 
 - [ ] chsboot (aka. boot manager)
 - [ ] GUI
-- [ ] tools
 - [ ] config
 - [ ] OTA
-- [ ] Vendor independent first stage bootloader
 
 ### Installation
 No instalation for now :<
@@ -17,7 +15,7 @@ No instalation for now :<
 ### To do
 - [ ] Booting Linux
 - [x] Place the code in MBR (first sector of the disk) 
-- [ ] Setup 16-bit segment registers and stack
+- [x] Setup 16-bit segment registers and stack
 - [x] Print startup message
 - [ ] Check presence of PCI, CPUID, MSRs
 - [ ] Enable and confirm enabled A20 line
