@@ -2,36 +2,51 @@
 TARGET := bootloader
 BUILD_DIR := build
 SRC_DIR := boot
+SRC := core
 ASM := nasm
 LINKER := ld
 
 # Source files and output paths
-ASM_FILES := core.asm
+ASM_FILES := $(SRC).asm
 ASM_INPUT := $(patsubst %, $(SRC_DIR)/%, $(ASM_FILES))
-ASM_OUTPUT := $(BUILD_DIR)/$(TARGET).bin
-ASM_DEBUG_OUTPUT := $(BUILD_DIR)/$(TARGET).o
-DEBUG_ELF_OUTPUT := $(BUILD_DIR)/$(TARGET).elf
+ASM_OUTPUT_BIN := $(BUILD_DIR)/$(TARGET).bin
+ASM_OUTPUT_O := $(BUILD_DIR)/$(TARGET).o
+ASM_OUTPUT_ELF := $(BUILD_DIR)/$(TARGET).elf
 
 # Compilation flags
-ASM_FLAGS := -i $(SRC_DIR)
+ASM_FLAGS := -f bin -i $(SRC_DIR)
 ASM_DEBUG_FLAGS := -f elf32 -g -F dwarf -i $(SRC_DIR)
-LDFLAGS := -T $(SRC_DIR)/linker.ld -m elf_i386
+LD_FLAGS := -T $(SRC_DIR)/linker.ld -m elf_i386
+LD_DEBUG_FLAGS := -Ttext 0x7C00 -m elf_i386
+
+# Run flags
+VM := qemu-system-i386
+VM_FLAGS := -drive format=raw,file=$(BUILD_DIR)/$(TARGET).bin
 
 # Targets
 .PHONY: all debug clean
 
-all: $(ASM_OUTPUT)
+# Default target to build the bootloader binary
+all: $(ASM_OUTPUT_BIN)
 
-$(ASM_OUTPUT): $(ASM_INPUT)
+# Rule to produce the final binary
+$(ASM_OUTPUT_BIN): $(ASM_INPUT) $(ASM_OUTPUT_ELF)
 	mkdir -p $(BUILD_DIR)
-	$(ASM) $(ASM_FLAGS) -o $@ $<
+	$(ASM) $(ASM_FLAGS) -o $(ASM_OUTPUT_O) $<
+	$(LINKER) $(LD_FLAGS) -o $@ $(ASM_OUTPUT_ELF)
 
-debug: $(DEBUG_ELF_OUTPUT)
+# Debug target to build the ELF file for debugging
+debug: $(ASM_OUTPUT_ELF)
 
-$(DEBUG_ELF_OUTPUT): $(ASM_INPUT)
+# Rule to produce the ELF file for debugging
+$(ASM_OUTPUT_ELF): $(ASM_INPUT)
 	mkdir -p $(BUILD_DIR)
-	$(ASM) $(ASM_DEBUG_FLAGS) -o $(ASM_DEBUG_OUTPUT) $<
-	$(LINKER) $(LDFLAGS) -o $@ $(ASM_DEBUG_OUTPUT)
+	$(ASM) $(ASM_DEBUG_FLAGS) -o $(ASM_OUTPUT_O) $<
+	$(LINKER) $(LD_DEBUG_FLAGS) -o $@ $(ASM_OUTPUT_O)
 
+run: $(ASM_OUTPUT_BIN)
+	$(VM) $(VM_FLAGS)
+
+# Clean up the build directory
 clean:
 	rm -rf $(BUILD_DIR)

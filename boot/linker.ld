@@ -10,12 +10,5 @@ SECTIONS
         *(.text)
     }
 
-    /DISCARD/ :
-    {
-        *(.comment)
-        *(.eh_frame_hdr)
-        *(.eh_frame)
-    }
-
     . = 0x7E00;
 }
