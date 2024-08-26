@@ -56,3 +56,9 @@ dkms.conf
 
 # Build
 build/
+
+# CLion
+.idea/
+
+# Swap files
+*.swp
