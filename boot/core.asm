@@ -1,5 +1,5 @@
 BITS 16                                     ; tell assembler that we use Real mode
-;ORG 0x7C00                                  ; put code in to first sector of the disk
+;ORG 0x7C00                                 commented out because of compatibility with GNU ld
 
 section .text
 global _start
