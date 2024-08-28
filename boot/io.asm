@@ -23,7 +23,7 @@ print_low_mem_msg_success:
     ret
 
 ; DATA
-boot_msg: db "Bootldr Hello!",ENDL,0
+boot_msg: db "",ENDL,0
 low_mem_msg_success: db "Successfuly detected lower memory",ENDL,0
 
 %endif
