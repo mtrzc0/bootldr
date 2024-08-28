@@ -2,7 +2,7 @@
 TARGET := bootloader
 BUILD_DIR := build
 SRC_DIR := boot
-SRC := core
+SRC := main
 ASM := nasm
 LINKER := ld
 
@@ -14,7 +14,7 @@ ASM_OUTPUT_O := $(BUILD_DIR)/$(TARGET).o
 ASM_OUTPUT_ELF := $(BUILD_DIR)/$(TARGET).elf
 
 # Compilation flags
-ASM_FLAGS := -f bin -i $(SRC_DIR)
+ASM_FLAGS := -f bin -i $(SRC_DIR) -w+label-orphan
 ASM_DEBUG_FLAGS := -f elf32 -g -F dwarf -i $(SRC_DIR)
 LD_FLAGS := -T $(SRC_DIR)/linker.ld -m elf_i386
 LD_DEBUG_FLAGS := -Ttext 0x7C00 -m elf_i386
