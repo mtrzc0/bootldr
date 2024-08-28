@@ -13,13 +13,12 @@ This project focuses on understanding how bootloaders work
 No instalation for now :<
 
 ### To do
-- [ ] Booting Linux
 - [x] Place the code in MBR (first sector of the disk) 
 - [x] Setup 16-bit segment registers and stack
 - [x] Print startup message
 - [ ] Check presence of PCI, CPUID, MSRs
-- [ ] Enable and confirm enabled A20 line
-- [ ] Load GDTR
+- [x] Enable and confirm enabled A20 line
+- [x] Load GDTR
 - [ ] Inform BIOS of target processor mode
 - [ ] Get memory map from BIOS
 - [ ] Locate kernel in filesystem
@@ -27,9 +26,8 @@ No instalation for now :<
 - [ ] Load kernel image into buffer
 - [ ] Enable graphics mode
 - [ ] Check kernel image ELF headers
-- [ ] Enable long mode, if 64-bit
+- [x] Enable Protected Mode
 - [ ] Allocate and map memory for kernel segments
-- [ ] Setup stack
 - [ ] Setup COM serial output port
 - [ ] Setup IDT
 - [ ] Disable PIC
