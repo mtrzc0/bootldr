@@ -5,6 +5,8 @@
 %define CR 0x0D                                 ; CR
 %define ENDL NL,CR                              ; '\n' + CR
 
+BITS 16                                         ; use 16-bit Real Mode
+
 ; initialize boot sector
 %macro boot_sec_init 0
     xor ax, ax                                  ; ax = 0

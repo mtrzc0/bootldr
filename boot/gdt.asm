@@ -1,3 +1,6 @@
+%ifndef GDT_ASM
+%define GDT_ASM
+
 gdt_start:
 gdt_null:
     dq 0x0                              ; null offset [63...0]  |
@@ -22,3 +25,5 @@ gdtr:
 
 CODE_SEG equ gdt_code - gdt_start       ; address of code segment relative to start
 DATA_SEG equ gdt_data - gdt_start       ; address of data segment relative to start
+
+%endif GDT_ASM

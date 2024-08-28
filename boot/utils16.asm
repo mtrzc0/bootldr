@@ -1,8 +1,10 @@
-%ifndef INPUT_ASM
-%define INPUT_ASM
+%ifndef UTILS16_ASM
+%define UTILS16_ASM
 
-%include "macro.asm"
+%include "macro16.asm"
 %include "gdt.asm"
+
+BITS 16                 ; use 16-bit Real Mode
 
 ; writes char from string buffer which si points to
 write_char:
@@ -25,7 +27,7 @@ en_a20:
 
     ret
 
-; enable 32-bit protected mode
+; enable 32-bit Protected Mode
 en_pm:
     cli                             ; disable interrupts
     lgdt [gdtr]                     ; load GDT
@@ -37,13 +39,6 @@ en_pm:
     jmp CODE_SEG:_pmstart
     ret
 
-pm_init:
-    mov ax, DATA_SEG                ; load data descriptor
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-    mov sp, 0x00                    ; setup stack pointer to 0x00
-    ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
