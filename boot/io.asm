@@ -9,23 +9,21 @@ write_char:
     int 0x10                        ; call BIOS
     ret                             ; return
 
-; setup cursor column coordinate to zero 
-endl:
-    write_string new_line
+; detect low memory (RAM < 1MB)
+check_low_mem:
+    call low_mem
     ret
-
 ; print string to the display
 print_boot_msg:
     write_string boot_msg
     ret
 
-print_mem_detect_msg:
-    write_string mem_detect_msg
+print_low_mem_msg_success:
+    write_string low_mem_msg_success
     ret
 
 ; DATA
-boot_msg: db "Bootldr Hello!",0
-mem_detect_msg: db "Detecting memory...",0
-new_line: db "",NL,CR,0
+boot_msg: db "Bootldr Hello!",ENDL,0
+low_mem_msg_success: db "Successfuly detected lower memory",ENDL,0
 
 %endif

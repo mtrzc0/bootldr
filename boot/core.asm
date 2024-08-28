@@ -15,9 +15,8 @@ mov es, ax
 mov ss, ax
 mov sp, 0x7C00
 
-call print_boot_msg
-call endl
-call print_mem_detect_msg
+call print_boot_msg                         ; print hello
+call check_low_mem                          ; detect lower memory (< 1MB)
 hlt                                         ; halt CPU and hang here
 
 %include "io.asm"
