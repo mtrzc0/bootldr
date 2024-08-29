@@ -14,15 +14,18 @@ This project focuses on understanding how bootloaders work. It includes various 
 
 ```
 .
-├── boot
-│   └── stage1
-│       └── Makefile
 ├── src
 │   ├── stage1
-│   │   └── main.asm
+│   │   ├── main.asm
+│   │   ├── gdt.asm
+│   │   ├── macro16.asm
+│   │   ├── utils16.asm
+│   │   ├── utils32.asm
+│   │   └── linker.ld
 │   ├── stage2
 │   │   └── main.c
-│   └── linker.ld
+├── build
+├── .gitignore
 ├── Makefile
 └── README.md
 ```
