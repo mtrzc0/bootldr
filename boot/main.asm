@@ -7,6 +7,7 @@ _start:
     boot_sector_init
     call print_boot_msg                     ; print hello
     call low_mem_check                      ; detect lower memory (< 1MB)
+    call clear16                            ; clear the screen
     call en_a20                             ; enable a20 line
     call en_pm                              ; enable 32-bit Protected Mode
 

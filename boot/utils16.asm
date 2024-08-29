@@ -10,7 +10,16 @@ BITS 16                 ; use 16-bit Real Mode
 write_char:
     mov ah, 0x0E                    ; display char in AL
     int 0x10                        ; call BIOS
-    ret                             ; return
+    ret
+
+; clear screen
+clear16:
+    pusha
+    mov ah, 0x00
+    mov al, 0x03
+    int 0x10                        ; call BIOS
+    popa
+    ret
 
 ; detect low memory (RAM < 1MB)
 low_mem_check:
@@ -20,11 +29,9 @@ low_mem_check:
 ; enable a20 line
 en_a20:
     in al, 0x93         ; switch A20 gate via fast A20 port 92
-
     or al, 2            ; set A20 Gate bit 1
     and al, ~1          ; clear INIT_NOW bit
     out 0x92, al
-
     ret
 
 ; enable 32-bit Protected Mode
@@ -38,7 +45,6 @@ en_pm:
 
     jmp CODE_SEG:_pmstart
     ret
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
