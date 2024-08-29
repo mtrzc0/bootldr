@@ -1,3 +1,3 @@
-//
-// Created by mateusz on 8/28/24.
-//
+int bmain(void) {
+    return 0;
+}

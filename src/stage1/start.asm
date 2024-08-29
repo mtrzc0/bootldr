@@ -2,6 +2,8 @@ BITS 16                                     ; use 16-bit Real Mode
 
 section .text
 
+extern _cstart
+
 global _start
 _start:
     boot_sector_init
@@ -15,7 +17,7 @@ BITS 32                                     ; use 32-bit Protected Mode
 _pmstart:
     call pm_init                            ; basic init of the Protected Mode
     call putchar
-    hlt                                     ; halt CPU and hang here
+    call _cstart                            ; invoke C code
 
 %include "utils16.asm"
 %include "utils32.asm"
