@@ -1,19 +1,39 @@
-# bootldr
-This project focuses on understanding how bootloaders work
+# Bootloader Project
 
-## Core
+This project focuses on understanding how bootloaders work. It includes various stages and components to load an operating system.
 
-- [ ] OS loader (Unix family) 
-- [ ] chsboot (aka. boot manager)
-- [ ] GUI
-- [ ] config
-- [ ] OTA
+## Core Components
 
-### Installation
-No instalation for now :<
+- **OS Loader**: Loads the operating system (Unix family).
+- **CHS Boot**: Boot manager.
+- **GUI**: Graphical user interface.
+- **Config**: Configuration files and settings.
+- **OTA**: Over-the-air updates.
 
-### To do
-- [x] Place the code in MBR (first sector of the disk) 
+## Project Structure
+
+```
+.
+├── boot
+│   └── stage1
+│       └── Makefile
+├── src
+│   ├── stage1
+│   │   └── main.asm
+│   ├── stage2
+│   │   └── main.c
+│   └── linker.ld
+├── Makefile
+└── README.md
+```
+
+## Installation
+
+Currently, there is no installation process available.
+
+## To Do
+
+- [x] Place the code in MBR (first sector of the disk)
 - [x] Setup 16-bit segment registers and stack
 - [x] Print startup message
 - [ ] Check presence of PCI, CPUID, MSRs
@@ -37,3 +57,46 @@ No instalation for now :<
 - [ ] Load IDTR
 - [ ] Enable APIC and setup using information in ACPI tables
 - [ ] Setup GDT and TSS
+
+## Build Instructions
+
+### Prerequisites
+
+- `nasm` (Netwide Assembler)
+- `ld` (GNU Linker)
+- `gcc` (GNU Compiler Collection)
+- `qemu` (for running the bootloader)
+
+### Building the Bootloader and running it in QEMU
+
+To build the bootloader, run the following command:
+
+```sh
+make
+```
+
+This will generate the bootloader binary in the `build` directory.
+
+### Cleaning the Build
+
+To clean the build directory, run:
+
+```sh
+make clean
+```
+
+### Debugging and running the Bootloader in QEMU in suspended mode
+
+To build the ELF file for debugging, run:
+
+```sh
+make debug
+```
+
+## Contribution
+
+Contributions are welcome! Please fork the repository and submit a pull request.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
