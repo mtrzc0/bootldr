@@ -55,7 +55,7 @@ Mkfile.old
 dkms.conf
 
 # Build
-build/
+*/build/
 
 # CLion
 .idea/
