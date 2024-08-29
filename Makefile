@@ -1,78 +1,73 @@
-# Variables
+# Target names
 TARGET := bootloader
-TARGET_STAGE1 := boot
-TARGET_STAGE2 := loader
 BUILD_DIR := build
 SRC_DIR := src
-STAGE1_DIR_NAME := stage1
-STAGE1_SRC := main
-STAGE2_DIR_NAME := stage2
-STAGE2_SRC := main
+
+# Stage-specific directories and source files
+STAGE1_NAME := boot
+STAGE1_DIR := $(SRC_DIR)/stage1
+STAGE1_SRC := $(STAGE1_DIR)/main.asm
+
+STAGE2_NAME := loader
+STAGE2_DIR := $(SRC_DIR)/stage2
+STAGE2_SRC := $(STAGE2_DIR)/main.c
+
+# Tools
 ASM := nasm
 CC := gcc
 LINKER := ld
+VM := qemu-system-i386
 
-# Source and output files
+# Output files
 TARGET_BIN := $(BUILD_DIR)/$(TARGET).bin
-STAGE1_INPUT_O := $(BUILD_DIR)/$(TARGET_STAGE1).o
-STAGE1_SRC_INPUT := $(SRC_DIR)/$(STAGE1_DIR_NAME)/$(STAGE1_SRC).asm
-STAGE1_DEBUG_ELF := $(BUILD_DIR)/$(TARGET_STAGE1).elf
-STAGE2_INPUT_O := $(BUILD_DIR)/$(TARGET_STAGE2).o
-STAGE2_SRC_INPUT := $(SRC_DIR)/$(STAGE2_DIR_NAME)/$(STAGE2_SRC).c
+STAGE1_OBJ := $(BUILD_DIR)/$(STAGE1_NAME).o
+STAGE1_ELF := $(BUILD_DIR)/$(STAGE1_NAME).elf
+STAGE2_OBJ := $(BUILD_DIR)/$(STAGE2_NAME).o
 
 # Compilation flags
-ASM_FLAGS := -f elf32 -i $(SRC_DIR)/$(STAGE1_DIR_NAME) -w+label-orphan -w+pp-trailing
-ASM_DEBUG_FLAGS := -f elf32 -i $(SRC_DIR)/$(STAGE1_DIR_NAME) -g -F dwarf
-LD_FLAGS := -T $(SRC_DIR)/$(STAGE1_DIR_NAME)/linker.ld -m elf_i386
+ASM_FLAGS := -f elf32 -i $(STAGE1_DIR) -w+label-orphan -w+pp-trailing
+ASM_DEBUG_FLAGS := -f elf32 -i $(STAGE1_DIR) -g -F dwarf
+CC_FLAGS := -m32 -ffreestanding
+CC_DEBUG_FLAGS := -m32 -g -ffreestanding
+LD_FLAGS := -T $(STAGE1_DIR)/linker.ld -m elf_i386
 LD_DEBUG_FLAGS := -Ttext 0x7C00 -m elf_i386
 
-# Run flags
-VM := qemu-system-i386
+# QEMU run flags
 VM_FLAGS := -drive format=raw,file=$(TARGET_BIN)
 VM_DEBUG_FLAGS := -s -S -drive format=raw,file=$(TARGET_BIN)
 
-# Targets
-.PHONY: all debug clean stage1
+# Phony targets
+.PHONY: all debug clean stage1 stage2
 
 # Default target to build the bootloader binary
 all: $(TARGET_BIN)
 
 # Rule to produce the final binary
-$(TARGET_BIN): stage1
+$(TARGET_BIN): $(STAGE1_OBJ)
 	mkdir -p $(BUILD_DIR)
-	$(LINKER) $(LD_FLAGS) -o $@ $(STAGE1_INPUT_O)
+	$(LINKER) $(LD_FLAGS) -o $@ $<
 	$(VM) $(VM_FLAGS)
 
-# Default target to build the stage1
-stage1: $(STAGE1_INPUT_O)
-
-# Rule to produce assembly object file
-$(STAGE1_INPUT_O): $(STAGE1_SRC_INPUT)
+# Rule to build the Stage 1 object file
+$(STAGE1_OBJ): $(STAGE1_SRC)
 	mkdir -p $(BUILD_DIR)
 	$(ASM) $(ASM_FLAGS) -o $@ $<
 
-# Default target to build the stage2
-stage2: $(STAGE2_INPUT_O)
+# Rule to build the Stage 2 object file
+stage2: $(STAGE2_OBJ)
 
-# Rule to produce C object file
-$(STAGE2_INPUT_O): $(STAGE2_SRC_INPUT)
+$(STAGE2_OBJ): $(STAGE2_SRC)
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(CC_FLAGS) -o $@ $<
 
 # Debug target to build the ELF file for debugging
-debug: $(STAGE1_DEBUG_ELF)
+debug: $(STAGE1_ELF)
 
-# Rule to produce the ELF file for debugging
-$(STAGE1_DEBUG_ELF): $(STAGE1_INPUT_O)
+$(STAGE1_ELF): $(STAGE1_OBJ)
 	mkdir -p $(BUILD_DIR)
-	$(ASM) $(ASM_DEBUG_FLAGS) -o $(ASM_OUTPUT_O) $<
-	$(LINKER) $(LD_DEBUG_FLAGS) -o $@ $(ASM_OUTPUT_O)
-
-# Rule to produce the ELF file for debugging
-$(STAGE2_DEBUG_ELF): $(STAGE2_INPUT_O)
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CC_DEBUG_FLAGS) -o $@ $<
+	$(ASM) $(ASM_DEBUG_FLAGS) -o $(STAGE1_OBJ) $(STAGE1_SRC)
+	$(LINKER) $(LD_DEBUG_FLAGS) -o $@ $(STAGE1_OBJ)
 
 # Clean up the build directory
 clean:
-	rm -r $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
