@@ -5,10 +5,8 @@ This project focuses on understanding how bootloaders work. It includes various 
 ## Core Components
 
 - **OS Loader**: Loads the operating system (Unix family).
-- **CHS Boot**: Boot manager.
 - **GUI**: Graphical user interface.
 - **Config**: Configuration files and settings.
-- **OTA**: Over-the-air updates.
 
 ## Project Structure
 
