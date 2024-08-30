@@ -1,8 +1,9 @@
 BITS 16                                     ; use 16-bit Real Mode
+ORG 0x7C00                                  ; origin of the boot sector
+
+%define NEXT_STAGE 0x7E00                   ; address of next stage
 
 section .text
-
-extern _cstart
 
 global _start
 _start:
@@ -16,8 +17,10 @@ _start:
 BITS 32                                     ; use 32-bit Protected Mode
 _pmstart:
     call pm_init                            ; basic init of the Protected Mode
-    call putchar
-    call _cstart                            ; invoke C code
+    call putchar                            ; Protected Mode test
+    jmp NEXT_STAGE                          ; jump to the next stage
+    cli                                     ; disable interrupts
+    hlt                                     ; halt the system
 
 %include "utils16.asm"
 %include "utils32.asm"
