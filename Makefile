@@ -25,7 +25,7 @@ STAGE1_OBJ := $(BUILD_DIR)/$(STAGE1_NAME).o
 STAGE1_BIN := $(BUILD_DIR)/$(STAGE1_NAME).bin
 STAGE1_ELF := $(BUILD_DIR)/$(STAGE1_NAME).elf
 STAGE2_OBJ := $(BUILD_DIR)/$(STAGE2_NAME).o
-STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_C_NAME).bin
+STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_NAME).bin
 
 # Compilation flags
 ASM_FLAGS := -f bin -i $(STAGE1_DIR) -w+label-orphan -w+pp-trailing

@@ -1,3 +1,4 @@
 int bmain(void) {
-    return 0;
+    *(char*)0xb8000 = 'X';
+    while(1);
 }

@@ -6,6 +6,11 @@
 
 BITS 16                 ; use 16-bit Real Mode
 
+; read disk into memory using CHS
+disk_init:
+    read_disk
+    ret
+
 ; writes char from string buffer which si points to
 write_char:
     mov ah, 0x0E                    ; display char in AL
@@ -56,8 +61,13 @@ print_low_mem_success_msg:
     write_string low_mem_msg_success
     ret
 
+print_disk_read_success_msg:
+    write_string disk_read_success
+    ret
+
 ; DATA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 hello_msg:           db "Loading...",NL,CR,0
 low_mem_msg_success: db "Successfuly detected lower memory",NL,CR,0
+disk_read_success:   db "Disk read successful",NL,CR,0
 
 %endif

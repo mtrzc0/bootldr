@@ -7,6 +7,21 @@
 
 BITS 16                                         ; use 16-bit Real Mode
 
+; read disk into memory using CHS
+%macro read_disk 0
+    mov ah, 0x02                                ; read disk
+    mov al, 1                                   ; read 1 sector
+    mov ch, 0                                   ; cylinder 0
+    mov dh, 0                                   ; head 0
+    mov cl, 2                                   ; sector 2
+    mov bx, 0x7E00                              ; buffer address
+    int 0x13                                    ; call BIOS
+    jc %%error                                  ; if carry flag is set handle error
+    call print_disk_read_success_msg            ; if success print msg
+    %%error:
+        ret
+%endmacro
+
 ; initialize boot sector
 %macro boot_sec_init 0
     xor ax, ax                                  ; ax = 0
