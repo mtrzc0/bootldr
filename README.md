@@ -37,9 +37,12 @@ Currently, there is no installation process available.
 - [x] Place the code in MBR (first sector of the disk)
 - [x] Setup 16-bit segment registers and stack
 - [x] Print startup message
-- [ ] Check presence of PCI, CPUID, MSRs
 - [x] Enable and confirm enabled A20 line
 - [x] Load GDTR
+- [x] Setup GDT
+- [x] Enable 32-bit Protected Mode
+- [x] Call second stage C code
+- [ ] Check presence of PCI, CPUID, MSRs
 - [ ] Inform BIOS of target processor mode
 - [ ] Get memory map from BIOS
 - [ ] Locate kernel in filesystem
@@ -47,7 +50,6 @@ Currently, there is no installation process available.
 - [ ] Load kernel image into buffer
 - [ ] Enable graphics mode
 - [ ] Check kernel image ELF headers
-- [x] Enable Protected Mode
 - [ ] Allocate and map memory for kernel segments
 - [ ] Setup COM serial output port
 - [ ] Setup IDT
@@ -57,7 +59,7 @@ Currently, there is no installation process available.
 - [ ] Setup FS/GS base
 - [ ] Load IDTR
 - [ ] Enable APIC and setup using information in ACPI tables
-- [ ] Setup GDT and TSS
+- [ ] Setup TSS
 
 ## Build Instructions
 
@@ -66,6 +68,8 @@ Currently, there is no installation process available.
 - `nasm` (Netwide Assembler)
 - `ld` (GNU Linker)
 - `gcc` (GNU Compiler Collection)
+- `make` (GNU Make)
+- `clang` (LLVM Compiler)
 - `qemu` (for running the bootloader)
 
 ### Building the Bootloader and running it in QEMU
