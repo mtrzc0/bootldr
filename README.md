@@ -19,6 +19,9 @@ This project focuses on understanding how bootloaders work. It includes various 
 │   ├── stage1
 │   │   ├── start.asm
 │   │   ├── gdt.asm
+│   │   ├── bpb.asm
+│   │   ├── log.asm
+│   │   ├── mem.asm
 │   │   ├── macro16.asm
 │   │   ├── utils16.asm
 │   │   ├── utils32.asm
