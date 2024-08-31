@@ -37,6 +37,9 @@ Currently, there is no installation process available.
 
 ## To Do
 
+<details>
+<summary>Click to expand</summary>
+
 - [x] Place the code in MBR (first sector of the disk)
 - [x] Setup 16-bit segment registers and stack
 - [x] Print startup message
@@ -64,6 +67,8 @@ Currently, there is no installation process available.
 - [ ] Load IDTR
 - [ ] Enable APIC and setup using information in ACPI tables
 - [ ] Setup TSS
+
+</details>
 
 ## Build Instructions
 
