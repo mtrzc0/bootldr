@@ -1,5 +1,5 @@
-%ifndef MACRO_ASM
-%define MACRO_ASM
+%ifndef MACRO16_ASM
+%define MACRO16_ASM
 
 %include "mem.asm"
 
@@ -95,4 +95,4 @@ BITS 16                                         ; use 16-bit Real Mode
 %%exit:
 %endmacro
 
-%endif
+%endif ; MACRO16_ASM

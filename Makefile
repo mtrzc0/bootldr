@@ -51,7 +51,7 @@ all: $(TARGET_BIN)
 $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 	mkdir -p $(BUILD_DIR)
 	dd if=$(STAGE1_BIN) of=$(TARGET_IMG) bs=512 count=1 conv=notrunc
-	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 count=1 conv=notrunc
+	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=2880 count=1 conv=notrunc
 	cp $(TARGET_IMG) $(BOOT_DIR)/$(TARGET).img
 	$(VM) $(VM_FLAGS)
 
