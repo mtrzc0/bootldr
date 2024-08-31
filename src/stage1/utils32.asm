@@ -12,9 +12,4 @@ pm_init:
     mov ss, ax
     ret
 
-putchar:
-    mov eax, 0x07690748             ; loads strint into eax
-    mov [0xb8000], eax              ; prints "Hi"
-    ret
-
 %endif ; UTILS32_ASM

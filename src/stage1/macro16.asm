@@ -51,10 +51,10 @@ BITS 16                                         ; use 16-bit Real Mode
     jc %%error                                  ; if carry flag is set, handle error
     jmp %%loop                                  ; loop back
 %%done:
-    call print_disk_read_success_msg            ; on success, print success message
+    call print_disk_read_ok                     ; on success, print success message
     jmp %%exit
 %%error:
-    call print_disk_read_error_msg              ; on error, print error message
+    call print_disk_read_fail                   ; on error, print error message
 %%exit:
 %endmacro
 
@@ -88,10 +88,10 @@ BITS 16                                         ; use 16-bit Real Mode
     clc                                         ; clear carry flag
     int 0x12                                    ; call BIOS for low memory size
     jc %%error                                  ; if carry flag is set handle error
-    call print_low_mem_success_msg              ; if success print msg
+    call print_low_mem_ok                       ; if success print msg
     jmp %%exit
 %%error:
-    call print_low_mem_error_msg                ; if error print msg
+    call print_low_mem_fail                    ; if error print msg
 %%exit:
 %endmacro
 

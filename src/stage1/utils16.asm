@@ -5,6 +5,9 @@ BITS 16                             ; use 16-bit Real Mode
 
 %include "macro16.asm"
 %include "gdt.asm"
+%include "log.asm"
+
+; FUNCTIONS
 
 ; read disk into memory using CHS
 disk_init:
@@ -49,7 +52,7 @@ en_a20:
 
 ; enable 32-bit Protected Mode
 en_pm:
-    push eax
+    pusha
     cli                             ; disable interrupts
     lgdt [gdtr]                     ; load GDT
 
@@ -57,47 +60,38 @@ en_pm:
     or eax, 0x01                    ; enable protection bit in (Control reg)
     mov cr0, eax
 
-    pop eax
+    popa
     jmp CODE_SEG:_pmstart
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-print_boot_msg:
+; PRINT MESSAGES
+print_low_mem_ok:
     pusha
-    write_string hello_msg
+    write_string low_mem_ok_str
     popa
     ret
 
-print_low_mem_success_msg:
+print_low_mem_fail:
     pusha
-    write_string low_mem_msg_success
+    write_string low_mem_fail_str
     popa
     ret
 
-print_low_mem_error_msg:
+print_disk_read_ok:
     pusha
-    write_string low_mem_msg_error
+    write_string disk_read_ok_str
     popa
     ret
 
-print_disk_read_success_msg:
+print_disk_read_fail:
     pusha
-    write_string disk_read_success
+    write_string disk_read_fail_str
     popa
     ret
 
-print_disk_read_error_msg:
-    pusha
-    write_string disk_read_error
-    popa
-    ret
-
-; DATA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-hello_msg:           db "[ OK  ] Basic init",NL,CR,0
-low_mem_msg_success: db "[ OK  ] Detecting lower memory",NL,CR,0
-low_mem_msg_error:   db "[ ERR ] Detecting lower memory",NL,CR,0
-disk_read_success:   db "[ OK  ] Reading disk",NL,CR,0
-disk_read_error:     db "[ ERR ] Reading disk",NL,CR,0
-drive_num:           db 0x00
+; DATA
+low_mem_ok_str:         db LOG_OK,"Detecting lower memory",NL,CR,0
+low_mem_fail_str:       db LOG_FAIL,"Detecting lower memory",NL,CR,0
+disk_read_ok_str:       db LOG_OK,"Reading disk",NL,CR,0
+disk_read_fail_str:     db LOG_FAIL,"Reading disk",NL,CR,0
 
 %endif ; UTILS16_ASM
