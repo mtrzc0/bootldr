@@ -17,4 +17,4 @@ putchar:
     mov [0xb8000], eax              ; prints "Hi"
     ret
 
-%endif
+%endif ; UTILS32_ASM

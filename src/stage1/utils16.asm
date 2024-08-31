@@ -100,4 +100,4 @@ disk_read_success:   db "[ OK  ] Reading disk",NL,CR,0
 disk_read_error:     db "[ ERR ] Reading disk",NL,CR,0
 drive_num:           db 0x00
 
-%endif
+%endif ; UTILS16_ASM
