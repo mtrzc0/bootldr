@@ -1,5 +1,5 @@
 %include "mem.asm"                          ; memory related macros
-;%include "bpb.asm"                          ; BIOS Parameter Block
+%include "bpb.asm"                          ; BIOS Parameter Block
 
 BITS 16                                     ; use 16-bit Real Mode
 
