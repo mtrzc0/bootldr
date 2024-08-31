@@ -12,6 +12,9 @@ This project focuses on understanding how bootloaders work. It includes various 
 
 ```
 .
+├── boot
+│   └── img
+│       └── bootloader.img
 ├── src
 │   ├── stage1
 │   │   ├── start.asm
