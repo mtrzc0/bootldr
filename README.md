@@ -42,6 +42,7 @@ Currently, there is no installation process available.
 - [x] Setup GDT
 - [x] Enable 32-bit Protected Mode
 - [x] Call second stage C code
+- [ ] Support GNU Multiboot
 - [ ] Check presence of PCI, CPUID, MSRs
 - [ ] Inform BIOS of target processor mode
 - [ ] Get memory map from BIOS

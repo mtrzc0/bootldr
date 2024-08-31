@@ -4,11 +4,11 @@ BUILD_DIR := build
 SRC_DIR := src
 
 # Stage-specific directories and source files
-STAGE1_NAME := boot
+STAGE1_NAME := stage1
 STAGE1_DIR := $(SRC_DIR)/stage1
 STAGE1_SRC := $(STAGE1_DIR)/start.asm
 
-STAGE2_NAME := loader
+STAGE2_NAME := stage2
 STAGE2_DIR := $(SRC_DIR)/stage2
 STAGE2_SRC := $(STAGE2_DIR)/main.c
 
@@ -19,6 +19,7 @@ LINKER := ld
 VM := qemu-system-i386
 
 # Output files
+BOOT_DIR := boot/img
 TARGET_BIN := $(BUILD_DIR)/$(TARGET).bin
 TARGET_IMG := $(BUILD_DIR)/$(TARGET).img
 STAGE1_OBJ := $(BUILD_DIR)/$(STAGE1_NAME).o
@@ -32,7 +33,7 @@ ASM_FLAGS := -f bin -i $(STAGE1_DIR) -w+label-orphan -w+pp-trailing
 ASM_DEBUG_FLAGS := -f elf32 -i $(STAGE1_DIR) -g -F dwarf
 LD_FLAGS := -T src/stage2/link.ld -m elf_i386
 LD_DEBUG_FLAGS := -Ttext 0x7C00 -m elf_i386
-CC_FLAGS := -Wunused-command-line-argument -ffreestanding -march=i386 -target i386-unknown-none -fno-builtin -nostdlib -z execstack -Wunused-command-line-argument -m32
+CC_FLAGS := -Wunused-command-line-argument -ffreestanding -march=i386 -target i386-unknown-none -fno-builtin -nostdlib -z execstack -m32
 CC_DEBUG_FLAGS := -m32 -g -ffreestanding
 
 # QEMU run flags
@@ -50,6 +51,7 @@ $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 	mkdir -p $(BUILD_DIR)
 	dd if=$(STAGE1_BIN) of=$(TARGET_IMG) bs=512 count=1
 	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 count=1 conv=notrunc
+	cp $(TARGET_IMG) $(BOOT_DIR)/$(TARGET).img
 	$(VM) $(VM_FLAGS)
 
 # Rule to build the Stage 1 object file
