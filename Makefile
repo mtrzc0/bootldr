@@ -1,7 +1,12 @@
 # Target names
 TARGET := bootloader
 BUILD_DIR := build
-SRC_DIR := src
+ARCH := x86
+TYPE := legacy
+
+ifeq ($(ARCH), x86)
+	SRC_DIR := $(ARCH)/$(TYPE)/src
+endif
 
 # Stage-specific directories and source files
 STAGE1_NAME := stage1
@@ -19,7 +24,7 @@ LINKER := ld
 VM := qemu-system-i386
 
 # Output files
-BOOT_DIR := boot/img
+BOOT_DIR := boot
 TARGET_BIN := $(BUILD_DIR)/$(TARGET).bin
 TARGET_IMG := $(BUILD_DIR)/$(TARGET).img
 STAGE1_OBJ := $(BUILD_DIR)/$(STAGE1_NAME).o
@@ -33,7 +38,7 @@ ASM_FLAGS := -f elf32 -i $(STAGE1_DIR) -w-label-orphan -w-pp-trailing -w-number-
 ASM_DEBUG_FLAGS := -f elf32 -i $(STAGE1_DIR) -g -F dwarf
 ASM_LD_FLAGS := -Ttext 0x7c00 -m elf_i386 --oformat binary
 ASM_LD_DEBUG_FLAGS := -Ttext 0x7C00 -m elf_i386
-C_LD_FLAGS := -T src/stage2/link.ld -m elf_i386
+C_LD_FLAGS := -T $(STAGE2_DIR)/link.ld -m elf_i386
 CC_FLAGS := -Wno-unused-command-line-argument -ffreestanding -march=i386 -target i386-unknown-none -fno-builtin -nostdlib -z execstack -m32
 CC_DEBUG_FLAGS := -g $(CC_FLAGS)
 
