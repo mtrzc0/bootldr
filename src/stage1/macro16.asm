@@ -36,7 +36,7 @@ BITS 16                                         ; use 16-bit Real Mode
 %%loop:
     add bx, SECTOR_SIZE                         ; move buffer (512 bytes) to next sector
     cmp bx, MAX_BUFFER_SIZE                     ; check if buffer is full
-    jge %%done                                   ; if buffer is full, end procedure
+    jge %%done                                  ; if buffer is full, end procedure
     inc cl                                      ; move to the next sector
     cmp cl, MAX_SECTORS                         ; check if reached max sectors
     jle %%continue                              ; if not, continue reading
