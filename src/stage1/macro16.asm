@@ -23,7 +23,7 @@ BITS 16                                         ; use 16-bit Real Mode
 %macro read_disk 0
 %%retry:
     mov ah, 0x02                                ; read disk
-    mov [drive_number], dl                      ; save disk number
+    mov [BS_DrvNum], dl                      ; save disk number
     mov al, 1                                   ; read 1 sector at a time
     mov bx, START_STAGE2                        ; buffer address
     mov cl, MIN_SECTORS + 1                     ; start from sector 2
