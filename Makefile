@@ -1,11 +1,21 @@
-# Target names
-TARGET := bootloader
-BUILD_DIR := build
-ARCH := x86
-TYPE := legacy
+include conf.mk
 
 ifeq ($(ARCH), x86)
-	SRC_DIR := $(ARCH)/$(TYPE)/src
+	ifeq ($(TYPE), legacy)
+		# Source directories
+		SRC_DIR := $(ARCH)/$(TYPE)/src
+		# Tools
+		ASM := nasm
+		CC := clang
+		LINKER := ld
+		VM := qemu-system-i386
+		CC_ARCH := i386
+		CC_TARGET := i386-unknown-none
+		ELF_ARCH := elf_i386
+		ASM_OUTPUT := elf32
+  	else ifeq ($(TYPE), uefi)
+		SRC_DIR := $(ARCH)/$(TYPE)/src
+	endif
 endif
 
 # Stage-specific directories and source files
@@ -16,12 +26,6 @@ STAGE1_SRC := $(STAGE1_DIR)/start.asm
 STAGE2_NAME := stage2
 STAGE2_DIR := $(SRC_DIR)/stage2
 STAGE2_SRC := $(STAGE2_DIR)/main.c
-
-# Tools
-ASM := nasm
-CC := clang
-LINKER := ld
-VM := qemu-system-i386
 
 # Output files
 BOOT_DIR := boot
@@ -34,12 +38,12 @@ STAGE2_OBJ := $(BUILD_DIR)/$(STAGE2_NAME).o
 STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_NAME).bin
 
 # Compilation flags
-ASM_FLAGS := -f elf32 -i $(STAGE1_DIR) -w-label-orphan -w-pp-trailing -w-number-overflow
-ASM_DEBUG_FLAGS := -f elf32 -i $(STAGE1_DIR) -g -F dwarf
-ASM_LD_FLAGS := -Ttext 0x7c00 -m elf_i386 --oformat binary
-ASM_LD_DEBUG_FLAGS := -Ttext 0x7C00 -m elf_i386
-C_LD_FLAGS := -T $(STAGE2_DIR)/link.ld -m elf_i386
-CC_FLAGS := -Wno-unused-command-line-argument -ffreestanding -march=i386 -target i386-unknown-none -fno-builtin -nostdlib -z execstack -m32
+ASM_FLAGS := -f $(ASM_OUTPUT) -i $(STAGE1_DIR) -w-label-orphan -w-pp-trailing -w-number-overflow
+ASM_DEBUG_FLAGS := -f $(ASM_OUTPUT) -i $(STAGE1_DIR) -g -F dwarf
+ASM_LD_FLAGS := -Ttext 0x7c00 -m $(ELF_ARCH) --oformat binary
+ASM_LD_DEBUG_FLAGS := -Ttext 0x7C00 -m $(ELF_ARCH)
+C_LD_FLAGS := -T $(STAGE2_DIR)/link.ld -m $(ELF_ARCH)
+CC_FLAGS := -Wno-unused-command-line-argument -ffreestanding -march=$(CC_ARCH) -target $(CC_TARGET) -fno-builtin -nostdlib -z execstack -m32
 CC_DEBUG_FLAGS := -g $(CC_FLAGS)
 
 # QEMU run flags
