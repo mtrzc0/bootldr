@@ -8,10 +8,10 @@ section .text
 global _start
 _start:
     boot_sector_init                        ; wrapper for boot sector initialization
-    call clear16                            ; clear the screen
-    call low_mem_check                      ; detect lower memory (< 1MB)
+    call low_mem_init                       ; detect lower memory (< 1MB)
     call disk_init                          ; read disk into memory
     call en_a20                             ; enable a20 line
+    call clear16                            ; clear the screen
     call en_pm                              ; enable 32-bit Protected Mode
 
 BITS 32                                     ; use 32-bit Protected Mode

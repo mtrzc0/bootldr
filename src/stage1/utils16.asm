@@ -34,7 +34,7 @@ clear16:
     ret
 
 ; detect low memory (RAM < 1MB)
-low_mem_check:
+low_mem_init:
     pusha
     low_mem
     popa
