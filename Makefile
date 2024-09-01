@@ -29,12 +29,12 @@ STAGE2_OBJ := $(BUILD_DIR)/$(STAGE2_NAME).o
 STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_NAME).bin
 
 # Compilation flags
-ASM_FLAGS := -f elf32 -i $(STAGE1_DIR) -w+label-orphan -w+pp-trailing
+ASM_FLAGS := -f elf32 -i $(STAGE1_DIR) -w-label-orphan -w-pp-trailing -w-number-overflow
 ASM_DEBUG_FLAGS := -f elf32 -i $(STAGE1_DIR) -g -F dwarf
 ASM_LD_FLAGS := -Ttext 0x7c00 -m elf_i386 --oformat binary
 ASM_LD_DEBUG_FLAGS := -Ttext 0x7C00 -m elf_i386
 C_LD_FLAGS := -T src/stage2/link.ld -m elf_i386
-CC_FLAGS := -Wunused-command-line-argument -ffreestanding -march=i386 -target i386-unknown-none -fno-builtin -nostdlib -z execstack -m32
+CC_FLAGS := -Wno-unused-command-line-argument -ffreestanding -march=i386 -target i386-unknown-none -fno-builtin -nostdlib -z execstack -m32
 CC_DEBUG_FLAGS := -g $(CC_FLAGS)
 
 # QEMU run flags

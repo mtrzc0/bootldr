@@ -19,15 +19,18 @@
 BITS 16                                         ; use 16-bit Real Mode
 
 ; read disk into memory using CHS
-; TODO: retry 3 times if error
+; remember to save drive label !
 %macro read_disk 0
+%%retry:
     mov ah, 0x02                                ; read disk
+    mov [drive_number], dl                      ; save disk number
     mov al, 1                                   ; read 1 sector at a time
     mov bx, START_STAGE2                        ; buffer address
     mov cl, MIN_SECTORS + 1                     ; start from sector 2
     mov ch, MIN_CYLINDERS                       ; start from cylinder 0
     mov dh, MIN_HEADS                           ; start from head 0
     int 0x13                                    ; call BIOS to read disk
+    xor si, si                                  ; used in counting retrys
     jc %%error                                  ; if carry flag is set, handle error
     ; Read 1 MB of data
 %%loop:
@@ -55,6 +58,9 @@ BITS 16                                         ; use 16-bit Real Mode
     jmp %%exit
 %%error:
     call print_disk_read_fail                   ; on error, print error message
+    cmp si, 3
+    inc si
+    jl %%retry
 %%exit:
 %endmacro
 
