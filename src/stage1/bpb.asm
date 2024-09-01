@@ -11,7 +11,7 @@ BS_JmpBoot:                             ; Jump instruction to boot code
 BS_OEMName:                 db "MSWIN4.1"               ; OEM Name
 BPB_BytsPerSec:             dw 512                      ; Bytes per sector
 BPB_SecPerClus:             db 1                        ; Sectors per cluster
-BPB_RsvdSecCnt:             dw 1                        ; Reserved sectors
+BPB_RsvdSecCnt:             dw 1                        ; Reserved sectors (boot sector => kernel will be loaded from disk)
 BPB_NumFATs:                db 2                        ; Number of FATs
 BPB_RootEntCnt:             dw 512                      ; Number of root directory entries
 BPB_TotSec16:               dw 2880                     ; Total sectors in logical volume
