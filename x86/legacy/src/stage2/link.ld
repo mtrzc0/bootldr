@@ -1,20 +1,21 @@
-OUTPUT_FORMAT("binary")
+OUTPUT_FORMAT(binary)
+
 ENTRY(bmain)
 
 SECTIONS {
     . = 0x7E00;
 
-    .text ALIGN (0x00) :
+    .text :
     {
         *(.text)
     }
 
-    .data ALIGN (0x00) :
+    .data :
     {
         *(.data)
     }
 
-    .bss ALIGN (0x00) :
+    .bss :
     {
         *(.bss)
         *(COMMON)

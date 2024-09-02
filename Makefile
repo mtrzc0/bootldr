@@ -32,11 +32,14 @@ STAGE2_SRC := $(STAGE2_DIR)/main.c
 BOOT_DIR := boot
 TARGET_BIN := $(BUILD_DIR)/$(TARGET).bin
 TARGET_ELF := $(BUILD_DIR)/$(TARGET).elf
+TARGET_OBJ := $(BUILD_DIR)/$(TARGET).o
 TARGET_IMG := $(BUILD_DIR)/$(TARGET).img
 STAGE1_OBJ := $(BUILD_DIR)/$(STAGE1_NAME).o
+STAGE1_DEBUG_OBJ := $(BUILD_DIR)/$(STAGE1_NAME)_dbg.o
 STAGE1_BIN := $(BUILD_DIR)/$(STAGE1_NAME).bin
 STAGE1_ELF := $(BUILD_DIR)/$(STAGE1_NAME).elf
 STAGE2_OBJ := $(BUILD_DIR)/$(STAGE2_NAME).o
+STAGE2_DEBUG_OBJ := $(BUILD_DIR)/$(STAGE2_NAME)_dbg.o
 STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_NAME).bin
 STAGE2_ELF := $(BUILD_DIR)/$(STAGE2_NAME).elf
 
@@ -56,6 +59,9 @@ VM_DEBUG_FLAGS := -s -S -drive format=raw,file=$(TARGET_IMG)
 # Phony targets
 .PHONY: all debug clean stage1 stage2
 
+# Silent
+.SILENT: all debug run
+
 # Default target to build the bootloader binary
 all: $(TARGET_BIN)
 
@@ -68,47 +74,53 @@ $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 
 stage1: $(STAGE1_OBJ) $(STAGE1_BIN)
 
-# Rule to build the Stage 1 object file
-$(STAGE1_OBJ): $(STAGE1_SRC)
+# Rule to build the Stage 1 binary
+$(STAGE1_BIN): $(STAGE1_SRC)
 	mkdir -p $(BUILD_DIR)
-	$(ASM) $(ASM_DEBUG_FLAGS) -o $@ $<
-
-$(STAGE1_BIN): $(STAGE1_OBJ)
-	mkdir -p $(BUILD_DIR)
-	$(LINKER) $(ASM_LD_FLAGS) -o $@ $<
+	$(ASM) $(ASM_FLAGS) -o $(STAGE1_OBJ) $<
+	$(LINKER) $(ASM_LD_FLAGS) -o $@ $(STAGE1_OBJ)
 
 stage2: $(STAGE2_OBJ)
 
-# Rule to build the Stage 2 object file
-$(STAGE2_OBJ): $(STAGE2_SRC)
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CC_DEBUG_FLAGS) -c -o $@ $<
-
 # Rule to build the Stage 2 binary
-$(STAGE2_BIN): $(STAGE2_OBJ)
+$(STAGE2_BIN): $(STAGE2_SRC)
 	mkdir -p $(BUILD_DIR)
-	$(LINKER) $(CC_LD_FLAGS) -o $@ $<
+	$(CC) $(CC_FLAGS) -c -o $(STAGE2_OBJ) $<
+	$(LINKER) $(CC_LD_FLAGS) -o $@ $(STAGE2_OBJ)
 
 # Run the bootloader in QEMU
 # This target runs the bootloader binary in QEMU.
 # It checks the DEBUG variable to determine whether to run in debug mode or normal mode.
 # If DEBUG is true, it runs QEMU with debugging flags.
 # If DEBUG is false, it runs QEMU with normal flags.
+# TODO: document in README
 run: $(TARGET_BIN)
 	if [ $(DEBUG) = true ]; then \
 		$(VM) $(VM_DEBUG_FLAGS); \
-	fi
-	if [ $(DEBUG) = false ]; then \
+	elif [ $(DEBUG) = false ]; then \
     	$(VM) $(VM_FLAGS); \
+    else \
+		echo "Invalid DEBUG value: $(DEBUG)"; \
+		echo "Try DEBUG=true or DEBUG=false"; \
     fi
 
 # Debug target to build the ELF file for debugging
 debug: $(TARGET_ELF)
 
 # Rule to build the ELF file for debugging
-$(TARGET_ELF): $(STAGE1_OBJ) $(STAGE2_OBJ)
+$(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJ)
 	mkdir -p $(BUILD_DIR)
-	$(LINKER) $(ASM_LD_FLAGS) -o $(TARGET_ELF) $(STAGE1_OBJ) $(STAGE2_OBJ)
+	$(LINKER) $(ASM_LD_DEBUG_FLAGS) -o $(TARGET_ELF) $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJ)
+
+# Rule to build the Stage 1 object file
+$(STAGE1_DEBUG_OBJ): $(STAGE1_SRC)
+	mkdir -p $(BUILD_DIR)
+	$(ASM) $(ASM_DEBUG_FLAGS) -o $@ $<
+
+# Rule to build the Stage 2 object file
+$(STAGE2_DEBUG_OBJ): $(STAGE2_SRC)
+	mkdir -p $(BUILD_DIR)
+	$(CC) $(CC_DEBUG_FLAGS) -c -o $@ $<
 
 # Clean up the build directory
 clean:
