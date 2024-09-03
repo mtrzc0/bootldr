@@ -1,5 +1,8 @@
 include conf.mk
 
+# Independent globals
+BUILD_DIR := build
+
 ifeq ($(ARCH), x86)
 	ifeq ($(TYPE), legacy)
 		# Source directories
@@ -9,6 +12,7 @@ ifeq ($(ARCH), x86)
 		CC := clang
 		LINKER := ld
 		VM := qemu-system-i386
+		# I/O Formats
 		CC_ARCH := i386
 		CC_TARGET := i386-unknown-none
 		ELF_ARCH := elf_i386
@@ -26,7 +30,7 @@ STAGE1_SRC := $(STAGE1_DIR)/start.asm
 
 STAGE2_NAME := stage2
 STAGE2_DIR := $(SRC_DIR)/stage2
-STAGE2_SRC := $(STAGE2_DIR)/main.c
+STAGE2_SRCS := $(wildcard $(STAGE2_DIR)/*.c */*.c)
 
 # Output files
 BOOT_DIR := boot
@@ -38,7 +42,7 @@ STAGE1_OBJ := $(BUILD_DIR)/$(STAGE1_NAME).o
 STAGE1_DEBUG_OBJ := $(BUILD_DIR)/$(STAGE1_NAME)_dbg.o
 STAGE1_BIN := $(BUILD_DIR)/$(STAGE1_NAME).bin
 STAGE1_ELF := $(BUILD_DIR)/$(STAGE1_NAME).elf
-STAGE2_OBJ := $(BUILD_DIR)/$(STAGE2_NAME).o
+STAGE2_OBJS := $(wildcard $(BUILD_DIR)/*.o */*.o)
 STAGE2_DEBUG_OBJ := $(BUILD_DIR)/$(STAGE2_NAME)_dbg.o
 STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_NAME).bin
 STAGE2_ELF := $(BUILD_DIR)/$(STAGE2_NAME).elf
@@ -70,9 +74,10 @@ $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 	mkdir -p $(BUILD_DIR)
 	dd if=$(STAGE1_BIN) of=$(TARGET_IMG) bs=512 count=1 conv=notrunc
 	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 count=2880 conv=notrunc
+	# TODO: mkfs
 	cp $(TARGET_IMG) $(BOOT_DIR)/$(TARGET).img
 
-stage1: $(STAGE1_OBJ) $(STAGE1_BIN)
+stage1: $(STAGE1_BIN)
 
 # Rule to build the Stage 1 binary
 $(STAGE1_BIN): $(STAGE1_SRC)
@@ -80,13 +85,14 @@ $(STAGE1_BIN): $(STAGE1_SRC)
 	$(ASM) $(ASM_FLAGS) -o $(STAGE1_OBJ) $<
 	$(LINKER) $(ASM_LD_FLAGS) -o $@ $(STAGE1_OBJ)
 
-stage2: $(STAGE2_OBJ)
+stage2: $(STAGE2_BIN)
 
 # Rule to build the Stage 2 binary
-$(STAGE2_BIN): $(STAGE2_SRC)
+$(STAGE2_BIN): $(STAGE2_SRCS)
 	mkdir -p $(BUILD_DIR)
-	$(CC) $(CC_FLAGS) -c -o $(STAGE2_OBJ) $<
-	$(LINKER) $(CC_LD_FLAGS) -o $@ $(STAGE2_OBJ)
+	$(CC) $(CC_FLAGS) -c -o $(BUILD_DIR)/main.o $(STAGE2_DIR)/main.c
+	$(CC) $(CC_FLAGS) -c -o $(BUILD_DIR)/vga.o $(STAGE2_DIR)/vga.c
+	$(LINKER) $(CC_LD_FLAGS) -o $@ $(STAGE2_OBJS)
 
 # Run the bootloader in QEMU
 # This target runs the bootloader binary in QEMU.
