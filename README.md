@@ -1,4 +1,4 @@
-# Bootloader Project
+# Bootldr Project
 
 This project focuses on understanding how bootloaders work. It includes various stages and components to load an operating system.
 
