@@ -1,31 +1,32 @@
+# Include configuration file
 include conf.mk
 
-# Target specific files
+# Define target-specific directories and files
 TARGET_DIR := boot
 BUILD_DIR := build
 TARGET_BIN := $(BUILD_DIR)/$(TARGET).bin
 TARGET_ELF := $(BUILD_DIR)/$(TARGET).elf
-TARGET_OBJ := $(BUILD_DIR)/$(TARGET).o
 TARGET_IMG := $(BUILD_DIR)/$(TARGET).img
 
+# Architecture-specific settings
 ifeq ($(ARCH), x86)
-	ifeq ($(TYPE), legacy)
-  		# Source directories
-  		SRC_DIR := $(ARCH)/$(TYPE)/src
-  		# Tools
-  		ASM := nasm
-  		CC := clang
-  		LINKER := ld
-  		VM := qemu-system-i386
-  		# I/O Formats
+    ifeq ($(TYPE), legacy)
+        # Source directories
+        SRC_DIR := $(ARCH)/$(TYPE)/src
+        # Tools
+        ASM := nasm
+        CC := clang
+        LINKER := ld
+        VM := qemu-system-i386
+        # I/O Formats
         CC_ARCH := i386
         CC_TARGET := i386-unknown-none
         ELF_ARCH := elf_i386
         ASM_OUTPUT := elf32
         ENTRY_POINT := 0x7c00
-   	else ifeq ($(TYPE), uefi)
-  		SRC_DIR := $(ARCH)/$(TYPE)/src
- 	endif
+    else ifeq ($(TYPE), uefi)
+       SRC_DIR := $(ARCH)/$(TYPE)/src
+    endif
 endif
 
 # Stage-specific directories and source files
@@ -58,12 +59,14 @@ VM_DEBUG_FLAGS := -s -S -drive format=raw,file=$(TARGET_IMG)
 all: $(TARGET_BIN)
 
 # Rule to produce the final file (.img)
-# TODO: produce .iso file (kernel + bootloader)
 $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
+	# Create build directory
 	mkdir -p $(BUILD_DIR)
+	# Write Stage 1 binary to image
 	dd if=$(STAGE1_BIN) of=$(TARGET_IMG) bs=512 count=1 conv=notrunc
+	# Write Stage 2 binary to image
 	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 count=2880 conv=notrunc
-	# TODO: mkfs
+	# Copy image to target directory
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
 # Run the bootloader in QEMU
@@ -81,11 +84,13 @@ run: $(TARGET_BIN)
 debug: $(TARGET_ELF)
 
 # Rule to build the ELF file for debugging
-# TODO: Check if required objs were build
-$(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJS)
+$(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJ)
+	# Create build directory
 	mkdir -p $(BUILD_DIR)
+	# Link object files to create ELF
 	$(LINKER) $(LD_DEBUG_FLAGS) -o $(TARGET_ELF) $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJ)
 
 # Clean up the build directory
 clean:
+	# Remove build directory
 	rm -rf $(BUILD_DIR)
