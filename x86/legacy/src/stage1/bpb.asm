@@ -1,9 +1,9 @@
 %ifndef BPB_ASM
 %define BPB_ASM
 
-BITS 16                             ; use 16-bit Real Mode
+BITS 16                                                 ; use 16-bit Real Mode
 
-BS_JmpBoot:                             ; Jump instruction to boot code
+BS_JmpBoot:                                             ; Jump instruction to boot code
     jmp short _start
     nop
 
