@@ -2,6 +2,7 @@
 include conf.mk
 
 # Define target-specific directories and files
+TARGET := bootloader
 TARGET_DIR := boot
 BUILD_DIR := build
 TARGET_BIN := $(BUILD_DIR)/$(TARGET).bin
@@ -53,10 +54,10 @@ VM_DEBUG_FLAGS := -s -S -drive format=raw,file=$(TARGET_IMG)
 .PHONY: all debug clean
 
 # Silent
-.SILENT: all run
+.SILENT: all
 
 # Default target to build the bootloader binary
-all: $(TARGET_BIN)
+all: stages $(TARGET_BIN)
 
 # Rule to produce the final file (.img)
 $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
@@ -80,6 +81,17 @@ run: $(TARGET_BIN)
 		echo "Try DEBUG=true or DEBUG=false"; \
 	fi
 
+# Build the bootloader stages
+stages:
+	@$(MAKE) -C $(STAGE1_DIR)
+	@$(MAKE) -C $(STAGE2_DIR)
+
+# Build the bootloader stages in debug mode
+stages_debug:
+	@$(MAKE) -C $(STAGE1_DIR) debug
+	@$(MAKE) -C $(STAGE2_DIR) debug
+
+
 # Debug target to build the ELF file for debugging
 debug: $(TARGET_ELF)
 
@@ -94,3 +106,6 @@ $(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJ)
 clean:
 	# Remove build directory
 	rm -rf $(BUILD_DIR)
+	# Clean up the build sub-directories
+	@$(MAKE) -C $(STAGE1_DIR) clean
+	@$(MAKE) -C $(STAGE2_DIR) clean
