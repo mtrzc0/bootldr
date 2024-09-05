@@ -24,15 +24,6 @@ write_char:
     popa
     ret
 
-; clear screen
-clear16:
-    pusha
-    mov ah, 0x00
-    mov al, 0x03
-    int 0x10                        ; call BIOS
-    popa
-    ret
-
 ; detect low memory (RAM < 1MB)
 low_mem_init:
     pusha

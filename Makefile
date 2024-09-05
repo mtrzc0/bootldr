@@ -39,9 +39,11 @@ STAGE1_DEBUG_OBJ := $(STAGE1_DIR)/$(BUILD_DIR)/start.debug.o
 
 STAGE2_NAME := stage2
 STAGE2_DIR := $(SRC_DIR)/stage2
-STAGE2_SRCS := $(wildcard $(STAGE2_DIR)/*.c)
+STAGE2_C_SRCS := $(wildcard $(STAGE2_DIR)/*.c)
+STAGE2_ASM_SRCS := $(wildcard $(STAGE2_DIR)/*.asm)
 STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_NAME).bin
-STAGE2_DEBUG_OBJ := $(patsubst $(STAGE2_DIR)/%.c, $(STAGE2_DIR)/$(BUILD_DIR)/%.debug.o, $(STAGE2_SRCS))
+STAGE2_DEBUG_C_OBJ := $(patsubst $(STAGE2_DIR)/%.c, $(STAGE2_DIR)/$(BUILD_DIR)/%.debug.o, $(STAGE2_C_SRCS))
+STAGE2_DEBUG_ASM_OBJ := $(patsubst $(STAGE2_DIR)/%.asm, $(STAGE2_DIR)/$(BUILD_DIR)/%.debug.o, $(STAGE2_ASM_SRCS))
 
 # Compilation flags
 LD_DEBUG_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH)
@@ -63,12 +65,20 @@ all: stages $(TARGET_BIN)
 $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 	# Create build directory
 	mkdir -p $(BUILD_DIR)
+	# Create target image file of 1.44MB
+	dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2880
+	# Make fs
+	# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
 	# Write Stage 1 binary to image
 	dd if=$(STAGE1_BIN) of=$(TARGET_IMG) bs=512 count=1 conv=notrunc
 	# Write Stage 2 binary to image
-	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 count=2880 conv=notrunc
+	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 conv=notrunc
 	# Copy image to target directory
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
+
+# Debug target to build the ELF file for debugging
+debug: stages_debug $(TARGET_ELF)
+	objdump -x $(TARGET_ELF)
 
 # Run the bootloader in QEMU
 run: $(TARGET_BIN)
@@ -83,24 +93,20 @@ run: $(TARGET_BIN)
 
 # Build the bootloader stages
 stages:
-	@$(MAKE) -C $(STAGE1_DIR)
-	@$(MAKE) -C $(STAGE2_DIR)
+	@$(MAKE) -j 8 -C $(STAGE1_DIR)
+	@$(MAKE) -j 8 -C $(STAGE2_DIR)
 
 # Build the bootloader stages in debug mode
 stages_debug:
 	@$(MAKE) -C $(STAGE1_DIR) debug
 	@$(MAKE) -C $(STAGE2_DIR) debug
 
-
-# Debug target to build the ELF file for debugging
-debug: $(TARGET_ELF)
-
 # Rule to build the ELF file for debugging
-$(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJ)
+$(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_C_OBJ) $(STAGE2_DEBUG_ASM_OBJ)
 	# Create build directory
 	mkdir -p $(BUILD_DIR)
 	# Link object files to create ELF
-	$(LINKER) $(LD_DEBUG_FLAGS) -o $(TARGET_ELF) $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_OBJ)
+	$(LINKER) $(LD_DEBUG_FLAGS) -o $(TARGET_ELF) $^
 
 # Clean up the build directory
 clean:

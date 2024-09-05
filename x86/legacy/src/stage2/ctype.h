@@ -1,6 +1,7 @@
 #ifndef CTYPE_H
 #define CTYPE_H
 
+typedef unsigned int size_t;
 typedef unsigned char uchar_t;
 typedef unsigned short wchar_t; // 16-bit Unicode character
 typedef unsigned char uint8_t;

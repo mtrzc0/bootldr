@@ -2,6 +2,7 @@
 BUILD_DIR := build
 
 # Define the C compiler and linker
+ASM := nasm
 CC := clang
 LINKER := ld
 
@@ -14,15 +15,22 @@ CC_TARGET := i386-unknown-none
 CC_FLAGS := -Wno-unused-command-line-argument -ffreestanding -march=$(CC_ARCH) -target $(CC_TARGET) -fno-builtin -nostdlib -z execstack -m32
 CC_DEBUG_FLAGS := -g $(CC_FLAGS)
 
+# Define the assembler flags
+ASM_FLAGS := -f elf32
+ASM_DEBUG_FLAGS := -g $(ASM_FLAGS) -F dwarf
+
 # Define the linker flags
 C_LD_FLAGS := -T link.ld -m $(ELF_ARCH)
 
 # Find all .c files in the current directory
-SRC_FILES := $(wildcard *.c)
+C_SRC_FILES := $(wildcard *.c)
+ASM_SRC_FILES += $(wildcard *.asm)
 
 # Generate object file names from source files
-OBJ_FILES := $(patsubst %.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
-OBJ_DEBUG_FILES := $(patsubst %.c, $(BUILD_DIR)/%.debug.o, $(SRC_FILES))
+C_OBJ_FILES := $(patsubst %.c, $(BUILD_DIR)/%.o, $(C_SRC_FILES))
+C_OBJ_DEBUG_FILES := $(patsubst %.c, $(BUILD_DIR)/%.debug.o, $(C_SRC_FILES))
+ASM_OBJ_FILES := $(patsubst %.asm, $(BUILD_DIR)/%.o, $(ASM_SRC_FILES))
+ASM_OBJ_DEBUG_FILES := $(patsubst %.asm, $(BUILD_DIR)/%.debug.o, $(ASM_SRC_FILES))
 
 # Define the target directory and name
 TARGET_DIR := ../../../../build
@@ -35,7 +43,14 @@ TARGET_BIN := $(TARGET_DIR)/$(TARGET_NAME).bin
 .PHONY: all debug
 
 # Default target to build all object files and the binary
-all: $(OBJ_FILES) $(TARGET_BIN)
+all: $(C_OBJ_FILES) $(ASM_OBJ_FILES) $(TARGET_BIN)
+
+# Rule to compile .asm files into .o files
+$(BUILD_DIR)/%.o: %.asm
+	# Create the build directory if it doesn't exist
+	mkdir -p $(BUILD_DIR)
+	# Compile the source file into an object file
+	$(ASM) $(ASM_FLAGS) $< -o $@
 
 # Rule to compile .c files into .o files
 $(BUILD_DIR)/%.o: %.c
@@ -45,14 +60,21 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
 # Rule to build the Stage 2 binary
-$(TARGET_BIN): $(OBJ_FILES)
+$(TARGET_BIN): $(C_OBJ_FILES) $(ASM_OBJ_FILES)
 	# Create the target directory if it doesn't exist
 	mkdir -p $(TARGET_DIR)
 	# Link the object files into a binary
 	$(LINKER) $(C_LD_FLAGS) -o $@ $^
 
 # Debug target to build debug object files
-debug: $(OBJ_DEBUG_FILES)
+debug: $(C_OBJ_DEBUG_FILES) $(ASM_OBJ_DEBUG_FILES)
+
+# Rule to compile .asm files into .o files
+$(BUILD_DIR)/%.debug.o: %.asm
+	# Create the build directory if it doesn't exist
+	mkdir -p $(BUILD_DIR)
+	# Compile the source file into an object file
+	$(ASM) $(ASM_DEBUG_FLAGS) $< -o $@
 
 # Rule to compile .c files into debug .o files
 $(BUILD_DIR)/%.debug.o: %.c

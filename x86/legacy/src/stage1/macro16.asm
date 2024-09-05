@@ -7,60 +7,70 @@
 %define CR 0x0D                                 ; CR
 %define ENDL NL,CR                              ; '\n' + CR
 
-%define MIN_SECTORS 1                           ; min sectors to read
-%define MAX_SECTORS 63                          ; max sectors to read
-%define MAX_HEADS 15                            ; max heads
-%define MIN_HEADS 0                             ; min heads
-%define MAX_CYLINDERS 2                         ; max cylinders
-%define MIN_CYLINDERS 0                         ; min cylinders
-%define MAX_BUFFER_SIZE 0xFC000                 ; max buffer size
+%define MIN_SECTORS 1                           ; minimum sectors to read (0 is unused)
+%define MAX_SECTORS 63                          ; maximum sectors per track
+%define MAX_HEADS 15                            ; maximum number of heads
+%define MIN_HEADS 0                             ; minimum number of heads (0 is the first head)
+%define MAX_CYLINDERS 2                         ; maximum number of cylinders
+%define MIN_CYLINDERS 0                         ; minimum number of cylinders
+%define MAX_BUFFER_SIZE 0xFC000                 ; maximum buffer size (1 MB)
 %define SECTOR_SIZE 0x200                       ; sector size (512 bytes)
 
 BITS 16                                         ; use 16-bit Real Mode
 
-; read disk into memory using CHS
-; remember to save drive label !
+; Read disk into memory using CHS (Cylinder, Head, Sector)
+; Note: Drive label should be saved before calling this macro.
 %macro read_disk 0
-%%retry:
-    mov ah, 0x02                                ; read disk
-    mov [BS_DrvNum], dl                      ; save disk number
-    mov al, 1                                   ; read 1 sector at a time
-    mov bx, START_STAGE2                        ; buffer address
-    mov cl, MIN_SECTORS + 1                     ; start from sector 2
+    mov [BS_DrvNum], dl                         ; save disk number in the memory location BS_DrvNum
+    mov ah, 0x02                                ; BIOS function: read disk sectors
+    mov al, 1                                   ; number of sectors to read at a time
+    mov bx, START_STAGE2                        ; destination buffer address
+    mov cl, MIN_SECTORS + 1                     ; start from sector 2 (usually bootloader is in sector 1)
     mov ch, MIN_CYLINDERS                       ; start from cylinder 0
     mov dh, MIN_HEADS                           ; start from head 0
+
+    xor si, si                                  ; retry counter
+
+%%retry:
     int 0x13                                    ; call BIOS to read disk
-    xor si, si                                  ; used in counting retrys
-    jc %%error                                  ; if carry flag is set, handle error
-    ; Read 1 MB of data
-%%loop:
-    add bx, SECTOR_SIZE                         ; move buffer (512 bytes) to next sector
-    cmp bx, MAX_BUFFER_SIZE                     ; check if buffer is full
+    jc %%error                                  ; if carry flag is set, jump to error handler
+
+%%read_loop:
+    add bx, SECTOR_SIZE                         ; increment buffer pointer to next sector
+    cmp bx, MAX_BUFFER_SIZE                     ; check if buffer exceeds its maximum size
     jge %%done                                  ; if buffer is full, end procedure
-    inc cl                                      ; move to the next sector
-    cmp cl, MAX_SECTORS                         ; check if reached max sectors
+
+    inc cl                                      ; increment sector number
+    cmp cl, MAX_SECTORS                         ; check if we've reached the maximum sectors per track
     jle %%continue                              ; if not, continue reading
-    mov cl, 1                                   ; reset sector number to 1
-    inc dh                                      ; move to next head
-    cmp dh, MAX_HEADS                           ; check if reached max heads
+
+    mov cl, MIN_SECTORS + 1                     ; reset sector number to start
+    inc dh                                      ; move to the next head
+    cmp dh, MAX_HEADS                           ; check if we've reached the maximum number of heads
     jle %%continue                              ; if not, continue reading
-    xor dh, dh                                  ; reset head to 0
+
+    mov dh, MIN_HEADS                           ; reset head to start
     inc ch                                      ; move to the next cylinder
-    cmp ch, MAX_CYLINDERS                       ; check if reached max cylinders
+    cmp ch, MAX_CYLINDERS                       ; check if we've reached the maximum number of cylinders
     jle %%continue                              ; if not, continue reading
-    jmp %%done                                  ; if reached max cylinders, done
+
+    jmp %%done                                  ; all cylinders, heads, and sectors have been read, exit
+
 %%continue:
-    int 0x13                                    ; call BIOS to read disk
-    jc %%error                                  ; if carry flag is set, handle error
-    jmp %%loop                                  ; loop back
+    int 0x13                                    ; call BIOS to read next sector
+    jc %%error                                  ; if carry flag is set, handle the error
+    jmp %%read_loop                             ; repeat reading loop
+
 %%done:
-    call print_disk_read_ok                     ; on success, print success message
-    jmp %%exit
+    call print_disk_read_ok                     ; print success message
+    jmp %%exit                                  ; exit the macro
+
 %%error:
-    call print_disk_read_fail                   ; on error, print error message
-    cmp si, 3
-    inc si
-    jl %%retry
+    call print_disk_read_fail                   ; print failure message
+    inc si                                      ; increment retry counter
+    cmp si, 3                                   ; allow up to 3 retries
+    jl %%retry                                  ; retry if not exceeded
+
 %%exit:
 %endmacro
 
