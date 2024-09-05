@@ -20,6 +20,8 @@ BITS 16                                         ; use 16-bit Real Mode
 
 ; Read disk into memory using CHS (Cylinder, Head, Sector)
 ; Note: Drive label should be saved before calling this macro.
+; TODO: Add CHS to LBA conversion
+; FIXME: Disk reading is not working properly
 %macro read_disk 0
     mov [BS_DrvNum], dl                         ; save disk number in the memory location BS_DrvNum
     mov ah, 0x02                                ; BIOS function: read disk sectors
