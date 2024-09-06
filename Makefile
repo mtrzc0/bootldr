@@ -75,7 +75,7 @@ $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 conv=notrunc
 	# Write Magic number to test if bootloader loaded disk correctly
 	echo "DISK_IS_OK" > disk_test.txt
-	dd if=disk_test.txt of=$(TARGET_IMG) bs=512 seek=10 conv=notrunc
+	dd if=disk_test.txt of=$(TARGET_IMG) bs=512 seek=126 conv=notrunc
 	# Copy image to target directory
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
