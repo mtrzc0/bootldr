@@ -8,36 +8,6 @@ This project focuses on understanding how bootloaders work. It includes various 
 - **GUI**: Graphical user interface.
 - **Config**: Configuration files and settings.
 
-## Project Structure
-
-```
-.
-├── build
-├── boot
-│   └── bootloader.img
-├── x86
-│   ├── legacy
-│   │   ├── README.md 
-│   │   ├── src
-│   │   │   ├── stage1
-│   │   │   │   ├── start.asm
-│   │   │   │   ├── gdt.asm
-│   │   │   │   ├── bpb.asm
-│   │   │   │   ├── log.asm
-│   │   │   │   ├── mem.asm
-│   │   │   │   ├── multiboot.asm
-│   │   │   │   ├── macro16.asm
-│   │   │   │   ├── utils16.asm
-│   │   │   │   ├── utils32.asm
-│   │   │   ├── stage2
-│   │   │   │   ├── main.c
-├───└───└───└───└── link.ld
-├── .gitignore
-├── Makefile
-├── conf.mk
-├── LICENSE 
-└── README.md
-```
 
 ## Installation
 
@@ -118,7 +88,3 @@ make debug
 ## Contribution
 
 Contributions are welcome! Please fork the repository and submit a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
