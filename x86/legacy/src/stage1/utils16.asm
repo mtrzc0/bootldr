@@ -26,8 +26,40 @@ BITS 16                             ; use 16-bit Real Mode
 
 ; FUNCTIONS
 
+; read disk only 63 sectors (64K) in head 0 and cylinder 0 into memory using CHS
+disk_init_chs:
+    xor di, di                      ; set si to 0
+.retry:
+    mov ah, 0x02                    ; read disk BIOS function
+    mov al, 0x7F                    ; number of sectors to read (127)
+    mov ch, 0x00                    ; cylinder
+    mov dh, 0x00                    ; head
+    mov cl, 0x02                    ; sector
+    mov bx, START_STAGE2            ; offset in segment
+    int 0x13                        ; call BIOS
+    jc .continue                    ; if carry flag is set, jump to error handler
+    jmp .ok                         ; if not, jump to success handler
+.continue:
+    inc di                          ; increment si
+    cmp di, 3                       ; check if we tried 3 times
+    jne .retry                      ; if not, retry
+    jmp .fail                       ; if yes, jump to error handler
+.fail:
+    call print_disk_read_fail       ; print failure message
+    ret
+.ok:
+    call print_disk_read_ok         ; print success message
+    ret
+
+; TODO: implement LBA to CHS conversion
+; convert LBA to CHS
+; use ax as LBA address
+lba_to_chs:
+    nop
+    ret
+
 ; initialize disk
-disk_init:
+disk_init_lba:
     pusha
     ; check if lba extension is supperted
     mov ah, 0x41                    ; check extensions
@@ -46,36 +78,8 @@ disk_init:
     jmp .ok                         ; if not, jump to success handler
 .lba_ext_not_sup:
     call print_disk_lba_sup_fail    ; print failure message
-    jmp .read_chs_0c0h63s           ; jump to read disk using CHS
+    jmp .fail                       ; jump to read disk using CHS
 
-; TODO: implement LBA to CHS conversion
-; convert LBA to CHS
-; use ax as LBA address
-.lba_to_chs:
-    nop
-
-; read disk only 63 sectors (32K) in head 0 and cylinder 0 into memory using CHS
-.read_chs_0c0h63s:
-    pusha
-    xor si, si                      ; set si to 0
-.retry:
-    mov ah, 0x02                    ; read disk BIOS function
-    mov al, 0x01                    ; number of sectors to read
-    mov cl, 0x02                    ; sector
-    mov ch, 0x00                    ; cylinder
-    mov dh, 0x00                    ; head
-    mov dl, 0x00                    ; set disk number for floppy
-    xor cx, cx                      ; set cx to 0
-    mov es, cx                      ; set ES to 0
-    mov bx, START_STAGE2            ; offset in segment
-    int 0x13                        ; call BIOS
-    jc .continue                    ; if carry flag is set, jump to error handler
-    jmp .ok                         ; if not, jump to success handler
-.continue:
-    inc si                          ; increment si
-    cmp si, 3                       ; check if we tried 3 times
-    jne .retry                      ; if not, retry
-    jmp .fail                       ; if yes, jump to error handler
 .fail:
     call print_disk_read_fail       ; print failure message
     popa

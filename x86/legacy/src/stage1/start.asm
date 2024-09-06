@@ -15,8 +15,9 @@ DAPACK:
     dw 16                          ; size of DAP
     dw START_STAGE2                ; offset in segment
     dw 0                           ; segment
+    ; TODO: Fix reading more than 1 sector
     dd 1                           ; number of sectors to read
-    dq 0                           ; LBA address
+    dd 0                           ; LBA address
 
 _start:
     ; boot sector initialization
@@ -27,7 +28,8 @@ _start:
     mov sp, START_STAGE1                    ; setup stack pointer
 
     ; prepare for 32-bit Protected Mode
-    call disk_init                          ; read disk into memory
+    call disk_init_chs                      ; read disk into memory using CHS
+    ;call disk_init_lba                      ; read disk into memory using LBA
     call en_a20                             ; enable a20 line
     call en_pm                              ; enable 32-bit Protected Mode
 
