@@ -50,7 +50,7 @@ LD_DEBUG_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH)
 
 # QEMU run flags
 VM_FLAGS := -drive format=raw,file=$(TARGET_IMG)
-VM_DEBUG_FLAGS := -s -S -drive format=raw,file=$(TARGET_IMG)
+VM_DEBUG_FLAGS := -s -S $(VM_FLAGS)
 
 # Phony targets
 .PHONY: all debug clean
@@ -65,8 +65,8 @@ all: stages $(TARGET_BIN)
 $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 	# Create build directory
 	mkdir -p $(BUILD_DIR)
-	# Create target image file of 1MB
-	dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2016
+	# Create target image file of 1.44MB
+	dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2880
 	# Make fs
 	# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
 	# Write Stage 1 binary to image

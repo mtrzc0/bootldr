@@ -1,9 +1,9 @@
 %ifndef UTILS32_ASM
 %define UTILS32_ASM
 
-%include "multiboot.asm"
-
 BITS 32                             ; use 32-bit Protected Mode
+
+%define MULTIBOOT_MAGIC 0x1BADB002  ; Multiboot magic number
 
 pm_init:
     mov ax, DATA_SEG                ; load data descriptor
