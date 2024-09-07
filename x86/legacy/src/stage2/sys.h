@@ -13,7 +13,31 @@
  */
 void outb(uint16_t port, uint8_t data);
 
-void memset();
+/**
+ * Fills a block of memory with a specified value.
+ *
+ * This function sets the first `count` bytes of the memory area pointed to by `dest`
+ * to the specified value `ch`.
+ *
+ * @param dest A pointer to the memory area to be filled.
+ * @param ch The value to be set. It is passed as an int but is converted to an unsigned char.
+ * @param count The number of bytes to be set to the value.
+ * @return A pointer to the memory area `dest`.
+ */
+void *memset(void *dest, int32_t ch, size_t count);
+
+/**
+ * Fills a block of memory with a specified wide character value.
+ *
+ * This function sets the first `count` wide characters of the memory area pointed to by `dest`
+ * to the specified wide character value `ch`.
+ *
+ * @param dest A pointer to the memory area to be filled.
+ * @param ch The wide character value to be set.
+ * @param count The number of wide characters to be set to the value.
+ * @return A pointer to the memory area `dest`.
+ */
+void *memsetw(wchar_t *dest, wchar_t ch, size_t count);
 
 /**
  * Copies `count` bytes from the memory area `src` to the memory area `dest`.

@@ -18,3 +18,18 @@ void memcpy(void *dest, const void *src, size_t count) {
         d[i] = s[i];
     }
 }
+
+void *memset(void *dest, int32_t ch, size_t count) {
+    char *d = (char *)dest;
+    for (size_t i = 0; i < count; i++) {
+        d[i] = ch;
+    }
+    return dest;
+}
+
+void *memsetw(wchar_t *dest, wchar_t ch, size_t count) {
+    for (size_t i = 0; i < count; i++) {
+        dest[i] = ch;
+    }
+    return dest;
+}

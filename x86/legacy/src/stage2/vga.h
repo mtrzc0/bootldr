@@ -3,6 +3,8 @@
 
 #include "ctype.h"
 
+#define WHITE_SPACE_ASCII 0x20
+
 /*
     Below are defined data structures,
     used in printing data to the screen.
@@ -63,6 +65,18 @@ typedef struct {
 void vga_init(void);
 
 /**
+ * Calculates the VGA text buffer index for a given cursor position.
+ *
+ * This function takes a pointer to a `vga_cursor_t` structure, which contains
+ * the x and y coordinates of the cursor, and returns the corresponding index
+ * in the VGA text buffer.
+ *
+ * @param cursor A pointer to a `vga_cursor_t` structure containing the cursor coordinates.
+ * @return The index in the VGA text buffer corresponding to the cursor position.
+ */
+uint32_t vga_i(vga_cursor_t *cursor);
+
+/**
  * Updates the VGA cursor position.
  *
  * This function updates the position of the cursor in the VGA text buffer
@@ -76,7 +90,7 @@ void vga_cursor_update(void);
  * This function clears the VGA text buffer, effectively resetting the screen
  * to a blank state.
  */
-// void cls(void);
+void cls(void);
 
 /**
  * Outputs a character to the VGA text buffer with a specified style.
@@ -99,5 +113,26 @@ void bputc(char chr, char style);
  * @param str The null-terminated string to output.
  */
 void bprintf(const char *str);
+
+
+/**
+ * Logs a failure message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating a failure message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_fail(const char *str);
+
+/**
+ * Logs a success message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating a success message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_ok(const char *str);
 
 #endif //VGA_H

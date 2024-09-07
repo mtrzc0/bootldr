@@ -1,19 +1,13 @@
-BITS 32                             ; Protected mode 32-bit code
+BITS 32                 ; Protected mode 32-bit code
 
-global outb
+global outb             ; make the label outb visible outside this file
+
+; outb - send a byte to an I/O port
+; stack: [esp + 8] the data byte
+;        [esp + 4] the I/O port
+;        [esp    ] return address
 outb:
-    ; C function prologue
-    push ax
-    push dx
-    push ebp
-    mov ebp, esp
-    sub esp, 8                      ; make room for two 16-bit arguments
-    mov al, [ebp-4]
-    mov dx, [ebp-8]
-    out dx, ax                      ; output byte in AL to port in DX
-    ; C function epilogue
-    mov esp, ebp
-    pop ebp
-    pop dx
-    pop ax
-    ret
+    mov al, [esp + 8]    ; move the data to be sent into the al register
+    mov dx, [esp + 4]    ; move the address of the I/O port into the dx register
+    out dx, al           ; send the data to the I/O port
+    ret                  ; return to the calling function

@@ -83,6 +83,14 @@ $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 debug: stages_debug $(TARGET_ELF)
 	objdump -x $(TARGET_ELF)
 
+# Clean up the build directory
+clean:
+	# Remove build directory
+	rm -rf $(BUILD_DIR)
+	# Clean up the build sub-directories
+	@$(MAKE) -C $(STAGE1_DIR) clean
+	@$(MAKE) -C $(STAGE2_DIR) clean
+
 # Run the bootloader in QEMU
 run: $(TARGET_BIN)
 	if [ $(DEBUG) = true ]; then \
@@ -110,11 +118,3 @@ $(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_C_OBJ) $(STAGE2_DEBUG_ASM_OBJ)
 	mkdir -p $(BUILD_DIR)
 	# Link object files to create ELF
 	$(LINKER) $(LD_DEBUG_FLAGS) -o $(TARGET_ELF) $^
-
-# Clean up the build directory
-clean:
-	# Remove build directory
-	rm -rf $(BUILD_DIR)
-	# Clean up the build sub-directories
-	@$(MAKE) -C $(STAGE1_DIR) clean
-	@$(MAKE) -C $(STAGE2_DIR) clean
