@@ -1,6 +1,9 @@
 # Bootldr Project
 
 This project focuses on understanding how bootloaders work. It includes various stages and components to load an operating system.
+> [!WARNING]
+> 
+> This project is a work in progress and is not yet complete. It is not recommended for production use.
 
 ## Core Components
 
@@ -59,7 +62,7 @@ Currently, there is no installation process available.
 - `clang` (LLVM Compiler)
 - `qemu` (for running the bootloader)
 
-### Building the Bootloader and running it in QEMU
+### Building the Bootloader
 
 To build the bootloader, run the following command:
 
@@ -69,20 +72,34 @@ make
 
 This will generate the bootloader binary in the `build` directory.
 
+### Build ELF file for Debugging
+
+To build the ELF file for debugging, run:
+
+```sh
+make debug
+```
+
+### Running the Bootloader in QEMU
+
+TO run the bootloader in QEMU, run:
+
+```sh
+make run DEBUG=false
+```
+
+TO run the bootloader in QEMU with debugging enabled, run:
+
+```sh
+make run DEBUG=true
+```
+
 ### Cleaning the Build
 
 To clean the build directory, run:
 
 ```sh
 make clean
-```
-
-### Debugging and running the Bootloader in QEMU in suspended mode
-
-To build the ELF file for debugging, run:
-
-```sh
-make debug
 ```
 
 ## Contribution
