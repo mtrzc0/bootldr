@@ -16,41 +16,6 @@ This project focuses on understanding how bootloaders work. It includes various 
 
 Currently, there is no installation process available.
 
-## To-Do List
-
-<details>
-<summary>Click to expand</summary>
-
-- [x] Place the code in MBR (first sector of the disk)
-- [x] Setup 16-bit segment registers and stack
-- [x] Print startup message
-- [x] Enable and confirm enabled A20 line
-- [x] Load GDTR
-- [x] Setup GDT
-- [x] Enable 32-bit Protected Mode
-- [x] Call second stage C code
-- [ ] Support GNU Multiboot
-- [ ] Check presence of PCI, CPUID, MSRs
-- [ ] Inform BIOS of target processor mode
-- [ ] Get memory map from BIOS
-- [ ] Locate kernel in filesystem
-- [ ] Allocate memory to load kernel image
-- [ ] Load kernel image into buffer
-- [ ] Enable graphics mode
-- [ ] Check kernel image ELF headers
-- [ ] Allocate and map memory for kernel segments
-- [ ] Setup COM serial output port
-- [ ] Setup IDT
-- [ ] Disable PIC
-- [ ] Check presence of CPU features (NX, SMEP, x87, PCID, global pages, TCE, WP, MMX, SSE, SYSCALL), and enable them
-- [ ] Assign a PAT to write combining
-- [ ] Setup FS/GS base
-- [ ] Load IDTR
-- [ ] Enable APIC and setup using information in ACPI tables
-- [ ] Setup TSS
-
-</details>
-
 ## Build Instructions
 
 ### Prerequisites
@@ -101,6 +66,41 @@ To clean the build directory, run:
 ```sh
 make clean
 ```
+
+## To-Do List
+
+<details>
+<summary>Click to expand</summary>
+
+- [x] Place the code in MBR (first sector of the disk)
+- [x] Setup 16-bit segment registers and stack
+- [x] Print startup message
+- [x] Enable and confirm enabled A20 line
+- [x] Load GDTR
+- [x] Setup GDT
+- [x] Enable 32-bit Protected Mode
+- [x] Call second stage C code
+- [ ] Support GNU Multiboot
+- [ ] Check presence of PCI, CPUID, MSRs
+- [ ] Inform BIOS of target processor mode
+- [ ] Get memory map from BIOS
+- [ ] Locate kernel in filesystem
+- [ ] Allocate memory to load kernel image
+- [ ] Load kernel image into buffer
+- [ ] Enable graphics mode
+- [ ] Check kernel image ELF headers
+- [ ] Allocate and map memory for kernel segments
+- [ ] Setup COM serial output port
+- [ ] Setup IDT
+- [ ] Disable PIC
+- [ ] Check presence of CPU features (NX, SMEP, x87, PCID, global pages, TCE, WP, MMX, SSE, SYSCALL), and enable them
+- [ ] Assign a PAT to write combining
+- [ ] Setup FS/GS base
+- [ ] Load IDTR
+- [ ] Enable APIC and setup using information in ACPI tables
+- [ ] Setup TSS
+
+</details>
 
 ## Contribution
 
