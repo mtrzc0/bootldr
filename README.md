@@ -16,7 +16,7 @@ This project focuses on understanding how bootloaders work. It includes various 
 
 Currently, there is no installation process available.
 
-## To Do
+## To-Do List
 
 <details>
 <summary>Click to expand</summary>
