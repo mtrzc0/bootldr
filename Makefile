@@ -49,7 +49,7 @@ STAGE2_DEBUG_ASM_OBJ := $(patsubst $(STAGE2_DIR)/%.asm, $(STAGE2_DIR)/$(BUILD_DI
 LD_DEBUG_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH)
 
 # QEMU run flags
-VM_FLAGS := -drive format=raw,file=$(TARGET_IMG)
+VM_FLAGS := -drive format=raw,file=$(TARGET_IMG) -net none
 VM_DEBUG_FLAGS := -s -S $(VM_FLAGS)
 
 # Phony targets
@@ -75,7 +75,7 @@ $(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
 	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 conv=notrunc
 	# Write Magic number to test if bootloader loaded disk correctly
 	echo "DISK_IS_OK" > disk_test.txt
-	dd if=disk_test.txt of=$(TARGET_IMG) bs=512 seek=126 conv=notrunc
+	dd if=disk_test.txt of=$(TARGET_IMG) bs=512 seek=2000 conv=notrunc
 	# Copy image to target directory
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 

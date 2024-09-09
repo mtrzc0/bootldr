@@ -29,7 +29,6 @@ _start:
 
     ; prepare for 32-bit Protected Mode
     call disk_init_chs                      ; read disk into memory using CHS
-    ;call disk_init_lba                      ; read disk into memory using LBA
     call en_a20                             ; enable a20 line
     call en_pm                              ; enable 32-bit Protected Mode
 

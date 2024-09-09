@@ -73,7 +73,6 @@ void log_ok(const char *str) {
     bputc(msg[5], VGA_STYLE_TEXT);
     bputc(msg[6], VGA_STYLE_TEXT);
     bprintf(str);
-    bputc('\n', VGA_STYLE_TEXT);
 }
 
 void log_fail(const char *str) {
@@ -87,5 +86,4 @@ void log_fail(const char *str) {
     bputc(msg[5], VGA_STYLE_TEXT);
     bputc(msg[6], VGA_STYLE_TEXT);
     bprintf(str);
-    bputc('\n', VGA_STYLE_TEXT);
 }

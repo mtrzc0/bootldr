@@ -4,45 +4,85 @@
 BITS 16                             ; use 16-bit Real Mode
 
 %include "gdt.asm"
+%include "bpb.asm"
 
 ; MACROS
+; memory
 %define START_STAGE2 0x7E00
-%define NL 0x0A                                 ; '\n'
-%define CR 0x0D                                 ; CR
-%define LOG_OK "[  OK  ] "
-%define LOG_FAIL "[ FAIL ] "
+
+; ascii
+%define NL 0x0A                      ; '\n'
+%define CR 0x0D                      ; CR
 
 ; writing string to the display
 %macro write_string 1
-    mov si, %1                              ; si = address of string aka %1
+    mov si, %1                       ; si = address of string aka %1
 %%repeat:
-    lodsb                                   ; load a byte pointed by si
-    cmp al, 0                               ; check for null terminated string
-    je %%exit                               ; if true end procedure
-    call write_char                         ; call sub procedure
-    jmp %%repeat                            ; jump to repeat
+    lodsb                            ; load a byte pointed by si
+    cmp al, 0                        ; check for null terminated string
+    je %%exit                        ; if true end procedure
+    call write_char                  ; call sub procedure
+    jmp %%repeat                     ; jump to repeat
 %%exit:
 %endmacro
 
 ; FUNCTIONS
 
-; read disk only 63 sectors (64K) in head 0 and cylinder 0 into memory using CHS
+; convert LBA to CHS
+; use si as LBA address
+; return CH=cylinder, DH=head, CL=sector
+lba_to_chs:
+    mov ax, si                      ; save LBA address
+    push bx                         ; save bx
+
+    ; calculate sectors (cl)
+    xor dx, dx                      ; clear dx
+    div word [BPB_SecPerTrk]        ; ax = LBA / SPT, dx = LBA % SPT
+    inc dx                          ; dx = LBA % SPT + 1
+    mov cx, dx                      ; save sector number in cx
+
+    ; calculate head (dh)
+    xor dx, dx                      ; clear dx
+    div word [BPB_NumHeads]         ; ax = LBA / (SPT * Heads), dx = LBA % (SPT * Heads)
+    mov dh, dl                      ; save head number in dh
+
+    ; calculate cylinder (ch)
+    mov ch, al                      ; save cylinder number in ch
+    shl ah, 6
+    or cl, ah                       ; put upper 2 bits of cylinder in cl
+
+    pop bx                          ; restore bx
+    ret
+
+; initialize disk with CHS
 disk_init_chs:
-    xor di, di                      ; set si to 0
-.retry:
-    mov ah, 0x02                    ; read disk BIOS function
-    mov al, 0x7F                    ; number of sectors to read (127)
-    mov ch, 0x00                    ; cylinder
-    mov dh, 0x00                    ; head
-    mov cl, 0x02                    ; sector
-    mov bx, START_STAGE2            ; offset in segment
-    int 0x13                        ; call BIOS
-    jc .continue                    ; if carry flag is set, jump to error handler
+    xor di, di                      ; set di to 0
+    xor si, si                      ; load LBA to ax
+    mov bx, START_STAGE2            ; buffer for sector
+    jmp .loop                       ; jump to loop
+.loop:
+    inc si                          ; increment LBA
+    call lba_to_chs                 ; convert LBA to CHS
+    mov ah, 2                       ; read disk BIOS function
+    mov al, 1                       ; number of sectors to read (127)
+    mov dl, 80h                     ; disk number
+    int 13h                         ; call BIOS
+    jc .retry                       ; if carry flag is set, jump to error handler
+    add bx, 200h                    ; next sector buffer
+    ; TODO: fix reading LBAs above 65
+    ; TODO: read up to 1.44 MB (2879 sectors)
+    cmp si, 62                      ; check if we read enough sectors to fill 1.44 MB
+    jle .loop                       ; if true read next sector
     jmp .ok                         ; if not, jump to success handler
-.continue:
-    inc di                          ; increment si
+.retry:
+    clc                             ; enable reading disk using CHS
+    mov ah, 0h                      ; reset disk BIOS function
+    mov dl, 80h                     ; disk number
+    int 13h                         ; call BIOS
+    jc .fail                        ; if carry flag is set, jump to error handler
+    inc di                          ; increment di
     cmp di, 3                       ; check if we tried 3 times
-    jne .retry                      ; if not, retry
+    jne .loop                       ; if not, retry
     jmp .fail                       ; if yes, jump to error handler
 .fail:
     call print_disk_read_fail       ; print failure message
@@ -51,14 +91,7 @@ disk_init_chs:
     call print_disk_read_ok         ; print success message
     ret
 
-; TODO: implement LBA to CHS conversion
-; convert LBA to CHS
-; use ax as LBA address
-lba_to_chs:
-    nop
-    ret
-
-; initialize disk
+; initialize disk with LBA
 disk_init_lba:
     pusha
     ; check if lba extension is supperted
@@ -66,9 +99,9 @@ disk_init_lba:
     mov bx, 0x55AA                  ; magic number
     mov dl, 0x80                    ; disk number
     int 0x13                        ; call BIOS
+    stc                             ; disable reading disk using int 13h extensions
     jc .lba_ext_not_sup             ; if carry flag is set, jump to error handler
     jmp .read_lba_ext               ; if not, jump to read disk using LBA
-
 .read_lba_ext:
     mov si, DAPACK                  ; load DAP address to si
     mov ah, 0x42                    ; extended read function
@@ -78,8 +111,31 @@ disk_init_lba:
     jmp .ok                         ; if not, jump to success handler
 .lba_ext_not_sup:
     call print_disk_lba_sup_fail    ; print failure message
-    jmp .fail                       ; jump to read disk using CHS
-
+    jmp .read_lba_via_chs           ; jump to read disk using CHS
+.read_lba_via_chs:
+    clc                             ; enable reading disk using CHS
+    mov si, 1                       ; LBA = second sector
+    xor di, di                      ; set di to 0
+    mov bx, START_STAGE2            ; buffer for sector
+    jmp .loop                       ; jump to loop
+.loop:
+    call lba_to_chs                 ; convert LBA to CHS
+    call print_disk_read_ok         ; print success message
+    mov ah, 0x02                    ; read disk BIOS function
+    mov al, 0x01                    ; number of sectors to read
+    mov dl, 0x80                    ; disk number 0
+    int 0x13                        ; call BIOS
+    jc .retry                       ; if carry flag is set, jump to error handler
+    add bx, 0x200                   ; next sector buffer
+    cmp si, 2879                    ; check if we read enough sectors to fill 1.44 MB
+    inc si                          ; increment LBA
+    jle .loop                       ; if true read next sector
+    jmp .ok                         ; if not, jump to success handler
+.retry:
+    inc di                          ; increment di
+    cmp di, 3                       ; check if we tried 3 times
+    jne .loop                       ; if not, retry
+    jmp .fail                       ; if yes, jump to error handler
 .fail:
     call print_disk_read_fail       ; print failure message
     popa
@@ -141,8 +197,8 @@ print_disk_lba_sup_fail:
     ret
 
 ; DATA
-disk_read_ok_str:       db LOG_OK,"Reading disk",NL,CR,0
-disk_read_fail_str:     db LOG_FAIL,"Reading disk",NL,CR,0
-disk_lba_sup_fail_str:  db LOG_FAIL,"LBA extensions not supported",NL,CR,0
+disk_read_ok_str:       db "Reading disk...OK",NL,CR,0
+disk_read_fail_str:     db "Reading disk...FAIL",NL,CR,0
+disk_lba_sup_fail_str:  db "LBA extensions not supported",NL,CR,0
 
 %endif ; UTILS16_ASM
