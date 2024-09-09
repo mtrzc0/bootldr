@@ -4,7 +4,7 @@
 BITS 16                                                 ; use 16-bit Real Mode
 
 BS_JmpBoot:                                             ; Jump instruction to boot code
-    jmp short _start
+    jmp short _stage1
     nop
 
 ; BIOS Parameter Block

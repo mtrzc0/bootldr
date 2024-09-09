@@ -99,7 +99,7 @@ disk_init_lba:
     mov bx, 0x55AA                  ; magic number
     mov dl, 0x80                    ; disk number
     int 0x13                        ; call BIOS
-    stc                             ; disable reading disk using int 13h extensions
+    stc                             ; DEBUG: implicitly disable reading disk using int 0x13 extensions
     jc .lba_ext_not_sup             ; if carry flag is set, jump to error handler
     jmp .read_lba_ext               ; if not, jump to read disk using LBA
 .read_lba_ext:
@@ -113,22 +113,23 @@ disk_init_lba:
     call print_disk_lba_sup_fail    ; print failure message
     jmp .read_lba_via_chs           ; jump to read disk using CHS
 .read_lba_via_chs:
-    clc                             ; enable reading disk using CHS
-    mov si, 1                       ; LBA = second sector
+    clc                             ; clear carry flag if for some reason it was set
+    xor si, si                      ; LBA = 0
     xor di, di                      ; set di to 0
-    mov bx, START_STAGE2            ; buffer for sector
+    mov bx, START_STAGE1            ; buffer for sector
     jmp .loop                       ; jump to loop
 .loop:
+    inc si                          ; increment LBA
+    add bx, 0x200                   ; next sector buffer
     call lba_to_chs                 ; convert LBA to CHS
-    call print_disk_read_ok         ; print success message
     mov ah, 0x02                    ; read disk BIOS function
     mov al, 0x01                    ; number of sectors to read
     mov dl, 0x80                    ; disk number 0
     int 0x13                        ; call BIOS
     jc .retry                       ; if carry flag is set, jump to error handler
-    add bx, 0x200                   ; next sector buffer
-    cmp si, 2879                    ; check if we read enough sectors to fill 1.44 MB
-    inc si                          ; increment LBA
+    ; FIXME: reading LBAs above 65
+    ; TODO: read up to 1.44 MB (2879 sectors)
+    cmp si, 63                      ; check if we read enough sectors to fill 1.44 MB
     jle .loop                       ; if true read next sector
     jmp .ok                         ; if not, jump to success handler
 .retry:
@@ -138,10 +139,11 @@ disk_init_lba:
     jmp .fail                       ; if yes, jump to error handler
 .fail:
     call print_disk_read_fail       ; print failure message
-    popa
-    ret
+    jmp .exit                       ; jump to exit
 .ok:
     call print_disk_read_ok         ; print success message
+    jmp .exit                       ; jump to exit
+.exit:
     popa
     ret
 
@@ -166,7 +168,7 @@ en_pm:
     mov cr0, eax
 
     popa
-    jmp CODE_SEG:_pmstart
+    jmp CODE_SEG:_stage2            ; jump to the next stage
 
 ; writes char from string buffer which si points to
 write_char:

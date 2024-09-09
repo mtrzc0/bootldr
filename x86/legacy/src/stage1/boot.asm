@@ -6,20 +6,20 @@ BITS 16                                     ; use 16-bit Real Mode
 %define START_STAGE2 0x7E00
 
 section .text
-global _start
+global _stage1
 
 ; Disk Address Packet (DAP) structure
-DAPACK:
-    db 0x10
-    db 0
-    dw 16                          ; size of DAP
-    dw START_STAGE2                ; offset in segment
-    dw 0                           ; segment
-    ; TODO: Fix reading more than 1 sector
-    dd 1                           ; number of sectors to read
-    dd 0                           ; LBA address
+; FIXME: reading LBAs above 127
+; TODO: read up to 1.44 MB (2879 sectors)
+DAPACK:     db 0x10
+            db 0
+            dw 127                         ; sectors to read
+.buf_addr:  dw START_STAGE2                ; buffer address
+            dw 0                           ; segment address
+.lba_addr:  dd 1                           ; lower 32-bits of LBA address
+            dd 0                           ; upper 16-bits of LBA address
 
-_start:
+_stage1:
     ; boot sector initialization
     xor ax, ax                              ; ax = 0
     mov ds, ax                              ; setup data segments registers
@@ -28,12 +28,12 @@ _start:
     mov sp, START_STAGE1                    ; setup stack pointer
 
     ; prepare for 32-bit Protected Mode
-    call disk_init_chs                      ; read disk into memory using CHS
+    call disk_init_lba                      ; read disk into memory using CHS
     call en_a20                             ; enable a20 line
     call en_pm                              ; enable 32-bit Protected Mode
 
 BITS 32                                     ; use 32-bit Protected Mode
-_pmstart:
+_stage2:
     call pm_init                            ; basic init of the Protected Mode
     jmp START_STAGE2                        ; jump to the next stage
     cli                                     ; disable interrupts

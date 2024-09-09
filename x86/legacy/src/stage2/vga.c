@@ -10,6 +10,8 @@ static vga_cursor_t vga_cursor = {0, 0};
 void vga_init(void) {
     // set up the pointer to the VGA buffer
     vga_addr = (wchar_t *) 0xB8000;
+    cls();
+    log_ok("Disk init success");
 }
 
 uint32_t vga_i(vga_cursor_t *cursor) {

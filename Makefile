@@ -33,9 +33,9 @@ endif
 # Stage-specific directories and source files
 STAGE1_NAME := stage1
 STAGE1_DIR := $(SRC_DIR)/stage1
-STAGE1_SRC := $(STAGE1_DIR)/start.asm
+STAGE1_SRC := $(STAGE1_DIR)/boot.asm
 STAGE1_BIN := $(BUILD_DIR)/$(STAGE1_NAME).bin
-STAGE1_DEBUG_OBJ := $(STAGE1_DIR)/$(BUILD_DIR)/start.debug.o
+STAGE1_DEBUG_OBJ := $(STAGE1_DIR)/$(BUILD_DIR)/boot.debug.o
 
 STAGE2_NAME := stage2
 STAGE2_DIR := $(SRC_DIR)/stage2

@@ -20,7 +20,7 @@ ASM_DEBUG_FLAGS := -f $(ASM_OUTPUT) -g -F dwarf
 ASM_LD_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH) --oformat binary
 
 # Find all .asm files in the current directory
-SRC_FILES := $(wildcard start.asm)
+SRC_FILES := $(wildcard boot.asm)
 
 # Generate object file names from source files
 OBJ_FILES := $(patsubst %.asm, $(BUILD_DIR)/%.o, $(SRC_FILES))
