@@ -6,8 +6,9 @@ TARGET := bootloader
 TARGET_DIR := boot
 BUILD_DIR := build
 TARGET_BIN := $(BUILD_DIR)/$(TARGET).bin
-TARGET_ELF := $(BUILD_DIR)/$(TARGET).elf
 TARGET_IMG := $(BUILD_DIR)/$(TARGET).img
+TARGET_ELF := $(BUILD_DIR)/$(TARGET).elf
+TARGET_O := $(BUILD_DIR)/$(TARGET).o
 
 # Architecture-specific settings
 ifeq ($(ARCH), x86)
@@ -35,17 +36,21 @@ STAGE1_NAME := stage1
 STAGE1_DIR := $(SRC_DIR)/stage1
 STAGE1_SRC := $(STAGE1_DIR)/boot.asm
 STAGE1_BIN := $(BUILD_DIR)/$(STAGE1_NAME).bin
-STAGE1_DEBUG_OBJ := $(STAGE1_DIR)/$(BUILD_DIR)/boot.debug.o
+STAGE1_O := $(STAGE1_DIR)/$(BUILD_DIR)/boot.o
+STAGE1_DEBUG_O := $(STAGE1_DIR)/$(BUILD_DIR)/boot.debug.o
 
 STAGE2_NAME := stage2
 STAGE2_DIR := $(SRC_DIR)/stage2
 STAGE2_C_SRCS := $(wildcard $(STAGE2_DIR)/*.c)
 STAGE2_ASM_SRCS := $(wildcard $(STAGE2_DIR)/*.asm)
 STAGE2_BIN := $(BUILD_DIR)/$(STAGE2_NAME).bin
-STAGE2_DEBUG_C_OBJ := $(patsubst $(STAGE2_DIR)/%.c, $(STAGE2_DIR)/$(BUILD_DIR)/%.debug.o, $(STAGE2_C_SRCS))
-STAGE2_DEBUG_ASM_OBJ := $(patsubst $(STAGE2_DIR)/%.asm, $(STAGE2_DIR)/$(BUILD_DIR)/%.debug.o, $(STAGE2_ASM_SRCS))
+STAGE2_C_O := $(patsubst $(STAGE2_DIR)/%.c, $(STAGE2_DIR)/$(BUILD_DIR)/%.o, $(STAGE2_C_SRCS))
+STAGE2_DEBUG_C_O := $(patsubst $(STAGE2_DIR)/%.c, $(STAGE2_DIR)/$(BUILD_DIR)/%.debug.o, $(STAGE2_C_SRCS))
+STAGE2_ASM_O := $(patsubst $(STAGE2_DIR)/%.asm, $(STAGE2_DIR)/$(BUILD_DIR)/%.o, $(STAGE2_ASM_SRCS))
+STAGE2_DEBUG_ASM_O := $(patsubst $(STAGE2_DIR)/%.asm, $(STAGE2_DIR)/$(BUILD_DIR)/%.debug.o, $(STAGE2_ASM_SRCS))
 
 # Compilation flags
+LD_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH) --oformat binary
 LD_DEBUG_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH)
 
 # QEMU run flags
@@ -53,35 +58,47 @@ VM_FLAGS := -drive format=raw,file=$(TARGET_IMG) -net none
 VM_DEBUG_FLAGS := -s -S $(VM_FLAGS)
 
 # Phony targets
-.PHONY: all debug clean
+.PHONY: all debug clean stages stages_debug run
 
 # Silent
 .SILENT: all
 
 # Default target to build the bootloader binary
-all: stages $(TARGET_BIN)
+all: stages $(TARGET_IMG)
 
 # Rule to produce the final file (.img)
-$(TARGET_BIN): $(STAGE1_BIN) $(STAGE2_BIN)
+$(TARGET_IMG): $(TARGET_BIN)
 	# Create build directory
 	mkdir -p $(BUILD_DIR)
 	# Create target image file of 1.44MB
 	dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2880
-	# Make fs
+	# TODO: Make fs
 	# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
-	# Write Stage 1 binary to image
-	dd if=$(STAGE1_BIN) of=$(TARGET_IMG) bs=512 count=1 conv=notrunc
-	# Write Stage 2 binary to image
-	dd if=$(STAGE2_BIN) of=$(TARGET_IMG) bs=512 seek=1 conv=notrunc
+	# Write final binary to image
+	dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 count=2880 conv=notrunc
 	# Write Magic number to test if bootloader loaded disk correctly
 	echo "DISK_IS_OK" > disk_test.txt
 	dd if=disk_test.txt of=$(TARGET_IMG) bs=512 seek=2000 conv=notrunc
 	# Copy image to target directory
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
+# Rule to produce .bin file
+$(TARGET_BIN): $(STAGE1_O) $(STAGE2_C_O) $(STAGE2_ASM_O)
+	# Create build directory
+	mkdir -p $(BUILD_DIR)
+	# Link object files to create binary
+	$(LINKER) $(LD_FLAGS) -o $@ $^
+
 # Debug target to build the ELF file for debugging
 debug: stages_debug $(TARGET_ELF)
 	objdump -x $(TARGET_ELF)
+
+# Rule to build the ELF file for debugging
+$(TARGET_ELF): $(STAGE1_DEBUG_O) $(STAGE2_DEBUG_C_O) $(STAGE2_DEBUG_ASM_O)
+	# Create build directory
+	mkdir -p $(BUILD_DIR)
+	# Link object files to create ELF
+	$(LINKER) $(LD_DEBUG_FLAGS) -o $@ $^
 
 # Clean up the build directory
 clean:
@@ -112,9 +129,3 @@ stages_debug:
 	@$(MAKE) -C $(STAGE1_DIR) debug
 	@$(MAKE) -C $(STAGE2_DIR) debug
 
-# Rule to build the ELF file for debugging
-$(TARGET_ELF): $(STAGE1_DEBUG_OBJ) $(STAGE2_DEBUG_C_OBJ) $(STAGE2_DEBUG_ASM_OBJ)
-	# Create build directory
-	mkdir -p $(BUILD_DIR)
-	# Link object files to create ELF
-	$(LINKER) $(LD_DEBUG_FLAGS) -o $(TARGET_ELF) $^

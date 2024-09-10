@@ -43,7 +43,7 @@ TARGET_BIN := $(TARGET_DIR)/$(TARGET_NAME).bin
 .PHONY: all debug
 
 # Default target to build all object files and the binary
-all: $(C_OBJ_FILES) $(ASM_OBJ_FILES) $(TARGET_BIN)
+all: $(C_OBJ_FILES) $(ASM_OBJ_FILES)
 
 # Rule to compile .asm files into .o files
 $(BUILD_DIR)/%.o: %.asm
@@ -58,13 +58,6 @@ $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(BUILD_DIR)
 	# Compile the source file into an object file
 	$(CC) $(CC_FLAGS) -c $< -o $@
-
-# Rule to build the Stage 2 binary
-$(TARGET_BIN): $(C_OBJ_FILES) $(ASM_OBJ_FILES)
-	# Create the target directory if it doesn't exist
-	mkdir -p $(TARGET_DIR)
-	# Link the object files into a binary
-	$(LINKER) $(C_LD_FLAGS) -o $@ $^
 
 # Debug target to build debug object files
 debug: $(C_OBJ_DEBUG_FILES) $(ASM_OBJ_DEBUG_FILES)

@@ -23,8 +23,8 @@ ASM_LD_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH) --oformat binary
 SRC_FILES := $(wildcard boot.asm)
 
 # Generate object file names from source files
-OBJ_FILES := $(patsubst %.asm, $(BUILD_DIR)/%.o, $(SRC_FILES))
-OBJ_DEBUG_FILES := $(patsubst %.asm, $(BUILD_DIR)/%.debug.o, $(SRC_FILES))
+O_FILES := $(patsubst %.asm, $(BUILD_DIR)/%.o, $(SRC_FILES))
+O_DEBUG_FILES := $(patsubst %.asm, $(BUILD_DIR)/%.debug.o, $(SRC_FILES))
 
 # Define the target directory and name
 TARGET_DIR := ../../../../build
@@ -37,7 +37,7 @@ TARGET_BIN := $(TARGET_DIR)/$(TARGET_NAME).bin
 .PHONY: all debug
 
 # Default target to build all object files and the binary
-all: $(OBJ_FILES) $(TARGET_BIN)
+all: $(O_FILES)
 
 # Rule to compile .asm files into .o files
 $(BUILD_DIR)/%.o: %.asm
@@ -46,15 +46,8 @@ $(BUILD_DIR)/%.o: %.asm
 	# Assemble the source file into an object file
 	$(ASM) $(ASM_FLAGS) -o $@ $<
 
-# Rule to build the Stage 1 binary
-$(TARGET_BIN): $(OBJ_FILES)
-	# Create the target directory if it doesn't exist
-	mkdir -p $(TARGET_DIR)
-	# Link the object files into a binary
-	$(LINKER) $(ASM_LD_FLAGS) -o $@ $<
-
 # Debug target to build debug object files
-debug: $(OBJ_DEBUG_FILES)
+debug: $(O_DEBUG_FILES)
 
 # Rule to compile .asm files into debug .o files
 $(BUILD_DIR)/%.debug.o: %.asm

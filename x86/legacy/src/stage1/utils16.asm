@@ -54,43 +54,6 @@ lba_to_chs:
     pop bx                          ; restore bx
     ret
 
-; initialize disk with CHS
-disk_init_chs:
-    xor di, di                      ; set di to 0
-    xor si, si                      ; load LBA to ax
-    mov bx, START_STAGE2            ; buffer for sector
-    jmp .loop                       ; jump to loop
-.loop:
-    inc si                          ; increment LBA
-    call lba_to_chs                 ; convert LBA to CHS
-    mov ah, 2                       ; read disk BIOS function
-    mov al, 1                       ; number of sectors to read (127)
-    mov dl, 80h                     ; disk number
-    int 13h                         ; call BIOS
-    jc .retry                       ; if carry flag is set, jump to error handler
-    add bx, 200h                    ; next sector buffer
-    ; TODO: fix reading LBAs above 65
-    ; TODO: read up to 1.44 MB (2879 sectors)
-    cmp si, 62                      ; check if we read enough sectors to fill 1.44 MB
-    jle .loop                       ; if true read next sector
-    jmp .ok                         ; if not, jump to success handler
-.retry:
-    clc                             ; enable reading disk using CHS
-    mov ah, 0h                      ; reset disk BIOS function
-    mov dl, 80h                     ; disk number
-    int 13h                         ; call BIOS
-    jc .fail                        ; if carry flag is set, jump to error handler
-    inc di                          ; increment di
-    cmp di, 3                       ; check if we tried 3 times
-    jne .loop                       ; if not, retry
-    jmp .fail                       ; if yes, jump to error handler
-.fail:
-    call print_disk_read_fail       ; print failure message
-    ret
-.ok:
-    call print_disk_read_ok         ; print success message
-    ret
-
 ; initialize disk with LBA
 disk_init_lba:
     pusha
