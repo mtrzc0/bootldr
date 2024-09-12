@@ -57,6 +57,8 @@ LD_DEBUG_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH)
 VM_FLAGS := -drive format=raw,file=$(TARGET_IMG) -net none
 VM_DEBUG_FLAGS := -s -S $(VM_FLAGS)
 
+WRITE_MAGIC := echo 'AAAAAAAAAAAAAA'
+
 # Phony targets
 .PHONY: all debug clean stages stages_debug run
 
@@ -77,8 +79,8 @@ $(TARGET_IMG): $(TARGET_BIN)
 	# Write final binary to image
 	dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 count=2880 conv=notrunc
 	# Write Magic number to test if bootloader loaded disk correctly
-	echo "DISK_IS_OK" > disk_test.txt
-	dd if=disk_test.txt of=$(TARGET_IMG) bs=512 seek=2000 conv=notrunc
+	$(WRITE_MAGIC) > disk_test
+	dd if=disk_test of=$(TARGET_IMG) bs=512 seek=126 conv=notrunc
 	# Copy image to target directory
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
@@ -91,7 +93,6 @@ $(TARGET_BIN): $(STAGE1_O) $(STAGE2_C_O) $(STAGE2_ASM_O)
 
 # Debug target to build the ELF file for debugging
 debug: stages_debug $(TARGET_ELF)
-	objdump -x $(TARGET_ELF)
 
 # Rule to build the ELF file for debugging
 $(TARGET_ELF): $(STAGE1_DEBUG_O) $(STAGE2_DEBUG_C_O) $(STAGE2_DEBUG_ASM_O)

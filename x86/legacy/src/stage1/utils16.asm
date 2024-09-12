@@ -28,90 +28,33 @@ BITS 16                             ; use 16-bit Real Mode
 
 ; FUNCTIONS
 
-; convert LBA to CHS
-; use si as LBA address
-; return CH=cylinder, DH=head, CL=sector
-lba_to_chs:
-    mov ax, si                      ; save LBA address
-    push bx                         ; save bx
-
-    ; calculate sectors (cl)
-    xor dx, dx                      ; clear dx
-    div word [BPB_SecPerTrk]        ; ax = LBA / SPT, dx = LBA % SPT
-    inc dx                          ; dx = LBA % SPT + 1
-    mov cx, dx                      ; save sector number in cx
-
-    ; calculate head (dh)
-    xor dx, dx                      ; clear dx
-    div word [BPB_NumHeads]         ; ax = LBA / (SPT * Heads), dx = LBA % (SPT * Heads)
-    mov dh, dl                      ; save head number in dh
-
-    ; calculate cylinder (ch)
-    mov ch, al                      ; save cylinder number in ch
-    shl ah, 6
-    or cl, ah                       ; put upper 2 bits of cylinder in cl
-
-    pop bx                          ; restore bx
-    ret
-
-; initialize disk with LBA
-disk_init_lba:
+; read 64K from disk
+disk_read_64K:
     pusha
-    ; check if lba extension is supperted
-    mov ah, 0x41                    ; check extensions
-    mov bx, 0x55AA                  ; magic number
+    xor di, di                      ; counter
+    mov bx, START_STAGE2            ; buffer for sector
+    mov ax, 0x027F                  ; read 127 sectors
+    mov ch, 0x00                    ; Cylinder
+    mov dh, 0x00                    ; Head
+    mov cl, 0x02                    ; Sector
     mov dl, 0x80                    ; disk number
-    int 0x13                        ; call BIOS
-    stc                             ; DEBUG: implicitly disable reading disk using int 0x13 extensions
-    jc .lba_ext_not_sup             ; if carry flag is set, jump to error handler
-    jmp .read_lba_ext               ; if not, jump to read disk using LBA
-.read_lba_ext:
-    mov si, DAPACK                  ; load DAP address to si
-    mov ah, 0x42                    ; extended read function
-    mov dl, 0x80                    ; disk number
-    int 0x13                        ; call BIOS
-    jc .fail                        ; if carry flag is set, jump to error handler
-    jmp .ok                         ; if not, jump to success handler
-.lba_ext_not_sup:
-    call print_disk_lba_sup_fail    ; print failure message
-    jmp .read_lba_via_chs           ; jump to read disk using CHS
-.read_lba_via_chs:
-    clc                             ; clear carry flag if for some reason it was set
-    xor si, si                      ; LBA = 0
-    xor di, di                      ; set di to 0
-    mov bx, START_STAGE1            ; buffer for sector
-    jmp .loop                       ; jump to loop
-.loop:
-    inc si                          ; increment LBA
-    add bx, 0x200                   ; next sector buffer
-    call lba_to_chs                 ; convert LBA to CHS
-    mov ah, 0x02                    ; read disk BIOS function
-    mov al, 0x01                    ; number of sectors to read
-    mov dl, 0x80                    ; disk number 0
-    int 0x13                        ; call BIOS
-    jc .retry                       ; if carry flag is set, jump to error handler
-    ; FIXME: reading LBAs above 65
-    ; TODO: read up to 1.44 MB (2879 sectors)
-    cmp si, 63                      ; check if we read enough sectors to fill 1.44 MB
-    jle .loop                       ; if true read next sector
-    jmp .ok                         ; if not, jump to success handler
 .retry:
-    inc di                          ; increment di
-    cmp di, 3                       ; check if we tried 3 times
-    jne .loop                       ; if not, retry
-    jmp .fail                       ; if yes, jump to error handler
+    int 0x13                        ; call BIOS
+    jnc .ok                         ; if carry flag is not set, jump to success handler
 .fail:
     call print_disk_read_fail       ; print failure message
-    jmp .exit                       ; jump to exit
+    cmp di, 3                       ; check if we tried 3 times
+    inc di                          ; increment counter
+    jne .retry                      ; if not, retry
+    jmp .exit                       ; if true, exit
 .ok:
     call print_disk_read_ok         ; print success message
-    jmp .exit                       ; jump to exit
 .exit:
     popa
     ret
 
 ; enable a20 line
-en_a20:
+ena20:
     push ax
     in al, 0x93                     ; switch A20 gate via fast A20 port 92
     or al, 2                        ; set A20 Gate bit 1
@@ -121,7 +64,7 @@ en_a20:
     ret
 
 ; enable 32-bit Protected Mode
-en_pm:
+enpm:
     pusha
     cli                             ; disable interrupts
     lgdt [gdtr]                     ; load GDT
@@ -131,7 +74,7 @@ en_pm:
     mov cr0, eax
 
     popa
-    jmp CODE_SEG:_stage2            ; jump to the next stage
+    jmp CODE_SEG:_pstart            ; jump to the next stage
 
 ; writes char from string buffer which si points to
 write_char:

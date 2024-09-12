@@ -5,7 +5,7 @@ BITS 32                             ; use 32-bit Protected Mode
 
 %define MULTIBOOT_MAGIC 0x1BADB002  ; Multiboot magic number
 
-pm_init:
+initpm:
     mov ax, DATA_SEG                ; load data descriptor
     mov ds, ax
     mov es, ax

@@ -2,6 +2,5 @@
 
 int bmain(void) {
     vga_init();
-
     return 0;
 }
