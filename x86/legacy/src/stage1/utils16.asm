@@ -33,7 +33,8 @@ disk_read_64K:
     pusha
     xor di, di                      ; counter
     mov bx, START_STAGE2            ; buffer for sector
-    mov ax, 0x027F                  ; read 127 sectors
+    mov al, 0x80                    ; number of sectors to read (128)
+    mov ah, 0x02                    ; read sectors from disk
     mov ch, 0x00                    ; Cylinder
     mov dh, 0x00                    ; Head
     mov cl, 0x02                    ; Sector

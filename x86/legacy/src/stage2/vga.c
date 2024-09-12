@@ -66,7 +66,6 @@ void bprintf(const char *str) {
 
 void log_ok(const char *str) {
     const char *msg = "[ OK ] ";
-    bputc('\n', VGA_STYLE_TEXT);
     bputc(msg[0], VGA_STYLE_TEXT);
     bputc(msg[1], VGA_STYLE_TEXT);
     bputc(msg[2], VGA_STYLE_LOG_OK);
@@ -75,11 +74,11 @@ void log_ok(const char *str) {
     bputc(msg[5], VGA_STYLE_TEXT);
     bputc(msg[6], VGA_STYLE_TEXT);
     bprintf(str);
+    bputc('\n', VGA_STYLE_TEXT);
 }
 
 void log_fail(const char *str) {
     const char *msg = "[FAIL] ";
-    bputc('\n', VGA_STYLE_TEXT);
     bputc(msg[0], VGA_STYLE_TEXT);
     bputc(msg[1], VGA_STYLE_LOG_FAIL);
     bputc(msg[2], VGA_STYLE_LOG_FAIL);
@@ -88,4 +87,5 @@ void log_fail(const char *str) {
     bputc(msg[5], VGA_STYLE_TEXT);
     bputc(msg[6], VGA_STYLE_TEXT);
     bprintf(str);
+    bputc('\n', VGA_STYLE_TEXT);
 }

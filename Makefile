@@ -73,14 +73,14 @@ $(TARGET_IMG): $(TARGET_BIN)
 	# Create build directory
 	mkdir -p $(BUILD_DIR)
 	# Create target image file of 1.44MB
-	dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2880
+	dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=128
 	# TODO: Make fs
 	# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
 	# Write final binary to image
-	dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 count=2880 conv=notrunc
+	dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 count=128 conv=notrunc
 	# Write Magic number to test if bootloader loaded disk correctly
-	$(WRITE_MAGIC) > disk_test
-	dd if=disk_test of=$(TARGET_IMG) bs=512 seek=126 conv=notrunc
+	#$(WRITE_MAGIC) > disk_test
+	#dd if=disk_test of=$(TARGET_IMG) bs=512 seek=126 conv=notrunc
 	# Copy image to target directory
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
