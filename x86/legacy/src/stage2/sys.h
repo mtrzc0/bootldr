@@ -14,6 +14,16 @@
 void outb(uint16_t port, uint8_t data);
 
 /**
+ * Reads a byte from the specified I/O port.
+ *
+ * This function reads a byte from the given I/O port and returns it.
+ *
+ * @param port The I/O port to read from.
+ * @return The byte read from the I/O port.
+ */
+uint8_t inb(uint16_t port);
+
+/**
  * Fills a block of memory with a specified value.
  *
  * This function sets the first `count` bytes of the memory area pointed to by `dest`
