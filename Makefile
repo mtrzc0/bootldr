@@ -36,7 +36,7 @@ STAGE1_NAME := stage1
 STAGE1_DIR := $(SRC_DIR)/stage1
 STAGE1_SRC := $(STAGE1_DIR)/boot.asm
 STAGE1_BIN := $(BUILD_DIR)/$(STAGE1_NAME).bin
-STAGE1_O := $(STAGE1_DIR)/$(BUILD_DIR)/boot.o
+STAGE1_ASM_O := $(STAGE1_DIR)/$(BUILD_DIR)/boot.o
 STAGE1_DEBUG_O := $(STAGE1_DIR)/$(BUILD_DIR)/boot.debug.o
 
 STAGE2_NAME := stage2
@@ -85,7 +85,7 @@ $(TARGET_IMG): $(TARGET_BIN)
 	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
 # Rule to produce .bin file
-$(TARGET_BIN): $(STAGE1_O) $(STAGE2_C_O) $(STAGE2_ASM_O)
+$(TARGET_BIN): $(STAGE1_ASM_O) $(STAGE2_C_O) $(STAGE2_ASM_O)
 	# Create build directory
 	mkdir -p $(BUILD_DIR)
 	# Link object files to create binary

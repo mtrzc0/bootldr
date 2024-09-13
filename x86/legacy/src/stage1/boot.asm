@@ -26,8 +26,7 @@ _start:
 BITS 32                                     ; use 32-bit Protected Mode
 _pstart:
     call initpm                             ; basic init of the Protected Mode
-    ;call bmain
-    jmp START_STAGE2                        ; jump to the next stage
+    call bmain                              ; call the second stage bootloader
     cli                                     ; disable interrupts
     hlt
 
