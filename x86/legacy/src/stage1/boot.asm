@@ -1,15 +1,14 @@
-BITS 16                                     ; use 16-bit Real Mode
-
 %include "bpb.asm"                          ; BIOS Parameter Block
 
 %define START_STAGE1 0x7C00
 %define START_STAGE2 0x7E00
 
-global _start
 extern bmain
 
 section .text
+global _start
 
+BITS 16                                     ; use 16-bit Real Mode
 _start:
     ; boot sector initialization
     xor ax, ax                              ; ax = 0
@@ -26,7 +25,7 @@ _start:
 BITS 32                                     ; use 32-bit Protected Mode
 _pstart:
     call initpm                             ; basic init of the Protected Mode
-    call bmain                              ; call the second stage bootloader
+    call bmain
     cli                                     ; disable interrupts
     hlt
 
