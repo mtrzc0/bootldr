@@ -48,16 +48,16 @@ all: $(C_OBJ_FILES) $(ASM_OBJ_FILES)
 # Rule to compile .asm files into .o files
 $(BUILD_DIR)/%.o: %.asm
 	# Create the build directory if it doesn't exist
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Compile the source file into an object file
-	$(ASM) $(ASM_FLAGS) $< -o $@
+	@$(ASM) $(ASM_FLAGS) $< -o $@
 
 # Rule to compile .c files into .o files
 $(BUILD_DIR)/%.o: %.c
 	# Create the build directory if it doesn't exist
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Compile the source file into an object file
-	$(CC) $(CC_FLAGS) -c $< -o $@
+	@$(CC) $(CC_FLAGS) -c $< -o $@
 
 # Debug target to build debug object files
 debug: $(C_OBJ_DEBUG_FILES) $(ASM_OBJ_DEBUG_FILES)
@@ -65,18 +65,18 @@ debug: $(C_OBJ_DEBUG_FILES) $(ASM_OBJ_DEBUG_FILES)
 # Rule to compile .asm files into .o files
 $(BUILD_DIR)/%.debug.o: %.asm
 	# Create the build directory if it doesn't exist
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Compile the source file into an object file
-	$(ASM) $(ASM_DEBUG_FLAGS) $< -o $@
+	@$(ASM) $(ASM_DEBUG_FLAGS) $< -o $@
 
 # Rule to compile .c files into debug .o files
 $(BUILD_DIR)/%.debug.o: %.c
 	# Create the build directory if it doesn't exist
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Compile the source file into a debug object file
-	$(CC) $(CC_DEBUG_FLAGS) -c $< -o $@
+	@$(CC) $(CC_DEBUG_FLAGS) -c $< -o $@
 
 # Clean up the build directory
 clean:
 	# Remove the build directory and its contents
-	rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)

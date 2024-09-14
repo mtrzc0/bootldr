@@ -57,8 +57,6 @@ LD_DEBUG_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH)
 VM_FLAGS := -drive format=raw,file=$(TARGET_IMG) -net none
 VM_DEBUG_FLAGS := -s -S $(VM_FLAGS)
 
-WRITE_MAGIC := echo 'AAAAAAAAAAAAAA'
-
 # Phony targets
 .PHONY: all debug clean stages stages_debug run
 
@@ -71,25 +69,22 @@ all: stages $(TARGET_IMG)
 # Rule to produce the final file (.img)
 $(TARGET_IMG): $(TARGET_BIN)
 	# Create build directory
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Create target image file of 1.44MB
-	dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=128
+	@dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=128
 	# TODO: Make fs
 	# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
 	# Write final binary to image
-	dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 count=128 conv=notrunc
-	# Write Magic number to test if bootloader loaded disk correctly
-	#$(WRITE_MAGIC) > disk_test
-	#dd if=disk_test of=$(TARGET_IMG) bs=512 seek=126 conv=notrunc
+	@dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 conv=notrunc
 	# Copy image to target directory
-	cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
+	@cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
 # Rule to produce .bin file
 $(TARGET_BIN): $(STAGE1_ASM_O) $(STAGE2_C_O) $(STAGE2_ASM_O)
 	# Create build directory
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Link object files to create binary
-	$(LINKER) $(LD_FLAGS) -o $@ $^
+	@$(LINKER) $(LD_FLAGS) -o $@ $^
 
 # Debug target to build the ELF file for debugging
 debug: stages_debug $(TARGET_ELF)
@@ -97,14 +92,14 @@ debug: stages_debug $(TARGET_ELF)
 # Rule to build the ELF file for debugging
 $(TARGET_ELF): $(STAGE1_DEBUG_O) $(STAGE2_DEBUG_C_O) $(STAGE2_DEBUG_ASM_O)
 	# Create build directory
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Link object files to create ELF
-	$(LINKER) $(LD_DEBUG_FLAGS) -o $@ $^
+	@$(LINKER) $(LD_DEBUG_FLAGS) -o $@ $^
 
 # Clean up the build directory
 clean:
 	# Remove build directory
-	rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)
 	# Clean up the build sub-directories
 	@$(MAKE) -C $(STAGE1_DIR) clean
 	@$(MAKE) -C $(STAGE2_DIR) clean

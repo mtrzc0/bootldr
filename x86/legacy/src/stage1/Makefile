@@ -42,9 +42,9 @@ all: $(O_FILES)
 # Rule to compile .asm files into .o files
 $(BUILD_DIR)/%.o: %.asm
 	# Create the build directory if it doesn't exist
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Assemble the source file into an object file
-	$(ASM) $(ASM_FLAGS) -o $@ $<
+	@$(ASM) $(ASM_FLAGS) -o $@ $<
 
 # Debug target to build debug object files
 debug: $(O_DEBUG_FILES)
@@ -52,11 +52,11 @@ debug: $(O_DEBUG_FILES)
 # Rule to compile .asm files into debug .o files
 $(BUILD_DIR)/%.debug.o: %.asm
 	# Create the build directory if it doesn't exist
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	# Assemble the source file into a debug object file
-	$(ASM) $(ASM_DEBUG_FLAGS) -o $@ $<
+	@$(ASM) $(ASM_DEBUG_FLAGS) -o $@ $<
 
 # Clean up the build directory
 clean:
 	# Remove the build directory and its contents
-	rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)

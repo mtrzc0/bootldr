@@ -24,9 +24,13 @@ _start:
 
 BITS 32                                     ; use 32-bit Protected Mode
 _pstart:
+    ; prepare for 32-bit Protected Mode
     call initpm                             ; basic init of the Protected Mode
+
+    ; call the C main function
     call bmain
     cli                                     ; disable interrupts
+    ; TODO: add code to restart the system
     hlt
 
 ; include other files after _start label
