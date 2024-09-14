@@ -30,8 +30,7 @@ _pstart:
     hlt
 
 ; include other files after _start label
-%include "utils16.asm"
-%include "utils32.asm"
+%include "utils.asm"
 
 times 510-($ - $$) db 0		                ; fill rest of the code with 0
 dw 0xAA55				                    ; boot signature required by MBR

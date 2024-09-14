@@ -1,12 +1,15 @@
-%ifndef UTILS16_ASM
-%define UTILS16_ASM
+%ifndef UTILS_ASM
+%define UTILS_ASM
 
+; ======================= 16-bit =======================
 BITS 16                             ; use 16-bit Real Mode
 
 %include "gdt.asm"
 %include "bpb.asm"
 
 ; MACROS
+; ======
+
 ; memory
 %define START_STAGE2 0x7E00
 
@@ -27,6 +30,7 @@ BITS 16                             ; use 16-bit Real Mode
 %endmacro
 
 ; FUNCTIONS
+; =========
 
 ; reak 64K from disk for the next stage
 disk_read_64K:
@@ -82,6 +86,7 @@ write_char:
     ret
 
 ; PRINT MESSAGES
+; ==============
 
 print_disk_read_ok:
     pusha
@@ -106,4 +111,39 @@ disk_read_ok_str:       db "Reading disk...OK",NL,CR,0
 disk_read_fail_str:     db "Reading disk...FAIL",NL,CR,0
 disk_lba_sup_fail_str:  db "LBA extensions not supported",NL,CR,0
 
-%endif ; UTILS16_ASM
+
+; ======================= 32-bit =======================
+BITS 32                             ; use 32-bit Protected Mode
+
+%define MULTIBOOT_MAGIC 0x1BADB002  ; Multiboot magic number
+
+; FUNCTIONS
+; =========
+
+; basic init of the Protected Mode
+initpm:
+    mov ax, DATA_SEG                ; load data descriptor
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    ret
+
+; MULTIBOOT header
+multiboot_init:
+    mov eax, MULTIBOOT_MAGIC
+    ; TODO: mov ebx, multiboot_info
+    ; TODO: Must be a 32-bit read/execute code segment with an offset of ‘0’ and a limit of ‘0xFFFFFFFF’. The exact value is undefined.
+    ;       mov cs, code_segment
+    ; TODO: Must be a 32-bit read/write data segment with an offset of ‘0’ and a limit of ‘0xFFFFFFFF’. The exact values are all undefined.
+    ;       mov ds, data_segment
+    ;       mov es, data_segment
+    ;       mov fs, data_segment
+    ;       mov gs, data_segment
+    ;       mov ss, data_segment
+    ; TODO: Bit 31 (PG) must be cleared. Bit 0 (PE) must be set. Other bits are all undefined.
+    ; TODO: Bit 17 (VM) must be cleared. Bit 9 (IF) must be cleared. Other bits are all undefined.
+    ret
+
+%endif ; UTILS_ASM
