@@ -4,7 +4,7 @@
 #include "ctype.h"
 
 /**
- * Sends a byte to the specified I/O port.
+ * @brief Sends a byte to the specified I/O port.
  *
  * This function writes the given byte to the specified I/O port.
  *
@@ -14,7 +14,17 @@
 void outb(uint16_t port, uint8_t data);
 
 /**
- * Reads a byte from the specified I/O port.
+ * @brief Sends a word (2 bytes) to the specified I/O port.
+ *
+ * This function writes the given 16-bit word to the specified I/O port.
+ *
+ * @param port The I/O port to write to.
+ * @param data The 16-bit word to write to the I/O port.
+ */
+void outw(uint16_t port, uint16_t data);
+
+/**
+ * @brief Reads a byte from the specified I/O port.
  *
  * This function reads a byte from the given I/O port and returns it.
  *
@@ -24,7 +34,17 @@ void outb(uint16_t port, uint8_t data);
 uint8_t inb(uint16_t port);
 
 /**
- * Fills a block of memory with a specified value.
+ * @brief Reads a word (2 bytes) from the specified I/O port.
+ *
+ * This function reads a 16-bit word from the given I/O port and returns it.
+ *
+ * @param port The I/O port to read from.
+ * @return The 16-bit word read from the I/O port.
+ */
+uint16_t inw(uint16_t port);
+
+/**
+ * @brief Fills a block of memory with a specified value.
  *
  * This function sets the first `count` bytes of the memory area pointed to by `dest`
  * to the specified value `ch`.
@@ -37,7 +57,7 @@ uint8_t inb(uint16_t port);
 void *memset(void *dest, int32_t ch, size_t count);
 
 /**
- * Fills a block of memory with a specified wide character value.
+ * @brief Fills a block of memory with a specified wide character value.
  *
  * This function sets the first `count` wide characters of the memory area pointed to by `dest`
  * to the specified wide character value `ch`.
@@ -50,7 +70,7 @@ void *memset(void *dest, int32_t ch, size_t count);
 void *memsetw(wchar_t *dest, wchar_t ch, size_t count);
 
 /**
- * Copies `count` bytes from the memory area `src` to the memory area `dest`.
+ * @brief Copies `count` bytes from the memory area `src` to the memory area `dest`.
  *
  * This function performs a byte-by-byte copy from the source to the destination.
  * The memory areas must not overlap.
@@ -62,7 +82,7 @@ void *memsetw(wchar_t *dest, wchar_t ch, size_t count);
 void memcpy(void *dest, const void *src, size_t count);
 
 /**
- * Calculates the length of a null-terminated string.
+ * @brief Calculates the length of a null-terminated string.
  *
  * This function iterates through the string until it finds the null terminator
  * and returns the length of the string including the null terminator.

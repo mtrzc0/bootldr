@@ -24,7 +24,7 @@ C_LD_FLAGS := -T link.ld -m $(ELF_ARCH)
 
 # Find all .c files in the current directory
 C_SRC_FILES := $(wildcard *.c)
-ASM_SRC_FILES += $(wildcard *.asm)
+ASM_SRC_FILES := $(wildcard *.asm)
 
 # Generate object file names from source files
 C_OBJ_FILES := $(patsubst %.c, $(BUILD_DIR)/%.o, $(C_SRC_FILES))

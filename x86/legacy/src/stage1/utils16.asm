@@ -28,28 +28,24 @@ BITS 16                             ; use 16-bit Real Mode
 
 ; FUNCTIONS
 
-; read 64K from disk
+; reak 64K from disk for the next stage
 disk_read_64K:
     pusha
-    xor di, di                      ; counter
-    mov bx, START_STAGE2            ; buffer for sector
-    mov al, 0x80                    ; number of sectors to read (128)
-    mov ah, 0x02                    ; read sectors from disk
-    mov ch, 0x00                    ; Cylinder
-    mov dh, 0x00                    ; Head
-    mov cl, 0x02                    ; Sector
-    mov dl, 0x80                    ; disk number
+    xor di, di                      ; reset retry counter
+    mov bx, START_STAGE2            ; set buffer for sector
+    mov ax, 0x0280                  ;
+    mov cx, 0x0002                  ; Set up registers for reading 64K from disk
+    mov dx, 0x0080                  ;
 .retry:
-    int 0x13                        ; call BIOS
-    jnc .ok                         ; if carry flag is not set, jump to success handler
-.fail:
-    call print_disk_read_fail       ; print failure message
-    cmp di, 3                       ; check if we tried 3 times
-    inc di                          ; increment counter
+    int 0x13                        ; call BIOS interrupt
+    jnc .ok                         ; if no carry (success), jump to success
+    inc di                          ; increment retry counter
+    cmp di, 3                       ; check if retried 3 times
     jne .retry                      ; if not, retry
-    jmp .exit                       ; if true, exit
+    call print_disk_read_fail
+    jmp .exit                       ; exit on failure after 3 retries
 .ok:
-    call print_disk_read_ok         ; print success message
+    call print_disk_read_ok
 .exit:
     popa
     ret
