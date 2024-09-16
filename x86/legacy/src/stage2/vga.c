@@ -89,3 +89,16 @@ void log_fail(const char *str) {
     bprintf(str);
     bputc('\n', VGA_STYLE_TEXT);
 }
+
+void log_info(const char *str) {
+    const char *msg = "[INFO] ";
+    bputc(msg[0], VGA_STYLE_TEXT);
+    bputc(msg[1], VGA_STYLE_LOG_INFO);
+    bputc(msg[2], VGA_STYLE_LOG_INFO);
+    bputc(msg[3], VGA_STYLE_LOG_INFO);
+    bputc(msg[4], VGA_STYLE_LOG_INFO);
+    bputc(msg[5], VGA_STYLE_TEXT);
+    bputc(msg[6], VGA_STYLE_TEXT);
+    bprintf(str);
+    bputc('\n', VGA_STYLE_TEXT);
+}

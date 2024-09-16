@@ -1,7 +1,7 @@
 #ifndef VGA_H
 #define VGA_H
 
-#include "ctype.h"
+#include "sys.h"
 
 #define WHITE_SPACE_ASCII 0x20
 
@@ -46,7 +46,7 @@ enum vga_color_palette16_t {
 enum vga_style_t {
     VGA_STYLE_TEXT = VGA_COLOR_LIGHT_GRAY,
     VGA_STYLE_LOG_OK = VGA_COLOR_LIGHT_GREEN,
-    VGA_STYLE_LOG_WARN = VGA_COLOR_YELLOW,
+    VGA_STYLE_LOG_INFO = VGA_COLOR_WHITE,
     VGA_STYLE_LOG_FAIL = VGA_COLOR_LIGHT_RED
 };
 
@@ -135,4 +135,13 @@ void log_fail(const char *str);
  */
 void log_ok(const char *str);
 
+/**
+ * @brief Logs an informational message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating an informational message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_info(const char *str);
 #endif //VGA_H
