@@ -70,8 +70,8 @@ all: stages $(TARGET_IMG)
 $(TARGET_IMG): $(TARGET_BIN)
 	# Create build directory
 	@mkdir -p $(BUILD_DIR)
-	# Create target image file of 1.44MB
-	@dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=128
+	# Create target image file
+	@dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2880
 	# TODO: Make fs
 	# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
 	# Write final binary to image

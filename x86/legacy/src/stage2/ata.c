@@ -5,18 +5,56 @@
 #include "sys.h"
 #include "vga.h"
 
-static ata_io_base_t ata_io_base_prim = { 0 };
+static ata_io_base_t ata_io_base = { 0 };
 static ata_ports_map_t ata_ports_map = { 0 };
+
+// Address of first disk sector NOT read via BIOS call
+static uint16_t *sector_buff = (uint16_t *) 0x7E80;
 
 void ata_init(void) {
     // detect port addresses
     ata_io_detect_ports(&ata_ports_map);
     // check if drive is connected aka floating bus
-    ata_io_detect_connected_drives(&ata_io_base_prim);
+    ata_io_detect_connected_drives(&ata_io_base);
+}
 
+bool ata_io_read_sector(uint32_t LBA28) {
+    // set up "master" drive
+    ata_io_write_drv_reg(0xE0 | LBA28 >> 24 & 0x0F);
 
+    // send null byte to err_and_feats_reg
+    ata_io_write_feats_reg(0x00);
+
+    // set sector count
+    ata_io_write_sec_count_reg(1);
+
+    // set LBA registers
+    ata_io_write_LBA_regs(LBA28);
+
+    // write command
+    ata_io_write_cmd_reg(CMD_READ);
+
+    // wait for disk
     // delay 400 ns for BSY to be set
-    ata_io_drive_polling(&ata_io_base_prim);
+    if(ata_io_drive_polling(&ata_io_base)) {
+        // read 256 words (512 bytes of data)
+        for (size_t i = 0; i < 256; i++) {
+            ata_io_read_data_reg(&ata_io_base);
+            *(sector_buff + i*2) = ata_io_base.data_reg;
+        }
+
+        log_ok("Reading data from sector");
+        return true;
+    }
+
+    // wait for disk
+    ata_io_400ns_delay(&ata_io_base);
+
+    // dump status and error registers if error occurs
+    ata_io_dump_stat_reg(&ata_io_base);
+    ata_io_dump_err_reg(&ata_io_base);
+    log_fail("Reading data from sector");
+    return false;
 }
 
 void ata_io_detect_ports(ata_ports_map_t *map) {
@@ -108,7 +146,7 @@ void ata_io_dump_stat_reg(ata_io_base_t *ports) {
     for (size_t i = 0; i < 8; i++) {
         switch (ports->stat_and_cmd_reg & 1 << i) {
             case ERR:
-                log_fail("Error");
+                log_fail("Disk error bit is NOT 0");
                 break;
             case IDX:
                 log_fail("Index bit is NOT 0");
@@ -190,12 +228,16 @@ uint16_t ata_io_phy_addr(ata_io_base_offset_t offset) {
     return map->primary + offset;
 }
 
-void ata_io_drive_polling(ata_io_base_t *ports) {
+void ata_io_400ns_delay(ata_io_base_t *ports) {
     // Delay 400 ns for BSY to be set
     for (size_t i = 0; i < 4; i++) {
         // Reading alternate status wastes 100 ns each time
         ata_io_read_alt_stat_reg(ports);
     }
+}
+
+bool ata_io_drive_polling(ata_io_base_t *ports) {
+    ata_io_400ns_delay(ports);
 
     while (1) {
         ata_io_read_stat_reg(ports);
@@ -204,16 +246,25 @@ void ata_io_drive_polling(ata_io_base_t *ports) {
         }
     }
 
-    // check status
-    ata_io_dump_stat_reg(ports);
+    // check errors if ERR bit is set
     if (ports->stat_and_cmd_reg & ERR) {
         ata_io_read_err_reg(ports);
-        ata_io_dump_err_reg(ports);
-    } else if (ports->stat_and_cmd_reg & DF) {
-        log_fail("Device fault");
-    } else if ((ports->stat_and_cmd_reg & DRQ) == false) {
-        log_fail("Data request is not set");
-    } else {
-        log_info("Polling complete");
+        return false;
     }
+
+    // check if device fault
+    if (ports->stat_and_cmd_reg & DF) {
+        log_fail("Device fault");
+        return false;
+    }
+
+    // check if DRQ bit is properly set
+    if ((ports->stat_and_cmd_reg & DRQ) == false) {
+        log_fail("Data request is not set");
+        return false;
+    }
+
+    // no errors
+    log_ok("Polling disk complete");
+    return true;
 }

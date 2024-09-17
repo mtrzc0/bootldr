@@ -1,6 +1,8 @@
 #ifndef ATA_H
 #define ATA_H
 
+#include <stdbool.h>
+
 #include "sys.h"
 
 #define ATA_FLOATING_BUS 0xFF
@@ -156,7 +158,7 @@ typedef enum {
 } drv_reg_bitmask_t;
 
 typedef enum {
-    ERR = 0x01,     // Error
+    ERR = 0x01,     // Indicates an error occurred
     IDX = 0x02,     // Index. Always set to 0
     CORR = 0x04,    // Corrected Data. Always set to 0
     DRQ = 0x08,     // Data Request
@@ -275,6 +277,14 @@ void ata_io_detect_ports(ata_ports_map_t *map);
  */
 void ata_io_detect_connected_drives(ata_io_base_t *ports);
 
-void ata_io_drive_polling(ata_io_base_t *ports);
+void ata_io_400ns_delay(ata_io_base_t *ports);
+
+bool ata_io_drive_polling(ata_io_base_t *ports);
+
+bool ata_io_read_sector(uint32_t LBA28);
+
+void ata_io_dump_err_reg(ata_io_base_t *ports);
+
+void ata_io_dump_stat_reg(ata_io_base_t *ports);
 
 #endif //ATA_H
