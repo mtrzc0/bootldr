@@ -68,22 +68,24 @@ all: stages $(TARGET_IMG)
 
 # Rule to produce the final file (.img)
 $(TARGET_IMG): $(TARGET_BIN)
-	# Create build directory
+# Create build directory
 	@mkdir -p $(BUILD_DIR)
-	# Create target image file
+# Create target image file
 	@dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2880
-	# TODO: Make fs
-	# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
-	# Write final binary to image
+# TODO: Make fs
+# mkfs.fat -F 16 -n "os" $(TARGET_IMG)
+# Write final binary to image
 	@dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 conv=notrunc
-	# Copy image to target directory
+	@echo "ABCDEF" > disktest
+	@dd if=disktest of=$(TARGET_IMG) bs=512 seek=16 conv=notrunc
+# Copy image to target directory
 	@cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
 # Rule to produce .bin file
 $(TARGET_BIN): $(STAGE1_ASM_O) $(STAGE2_C_O) $(STAGE2_ASM_O)
-	# Create build directory
+# Create build directory
 	@mkdir -p $(BUILD_DIR)
-	# Link object files to create binary
+# Link object files to create binary
 	@$(LINKER) $(LD_FLAGS) -o $@ $^
 
 # Debug target to build the ELF file for debugging
@@ -91,16 +93,16 @@ debug: stages_debug $(TARGET_ELF)
 
 # Rule to build the ELF file for debugging
 $(TARGET_ELF): $(STAGE1_DEBUG_O) $(STAGE2_DEBUG_C_O) $(STAGE2_DEBUG_ASM_O)
-	# Create build directory
+# Create build directory
 	@mkdir -p $(BUILD_DIR)
-	# Link object files to create ELF
+# Link object files to create ELF
 	@$(LINKER) $(LD_DEBUG_FLAGS) -o $@ $^
 
 # Clean up the build directory
 clean:
-	# Remove build directory
+# Remove build directory
 	@rm -rf $(BUILD_DIR)
-	# Clean up the build sub-directories
+# Clean up the build sub-directories
 	@$(MAKE) -C $(STAGE1_DIR) clean
 	@$(MAKE) -C $(STAGE2_DIR) clean
 

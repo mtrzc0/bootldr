@@ -32,13 +32,13 @@ BITS 16                             ; use 16-bit Real Mode
 ; FUNCTIONS
 ; =========
 
-; reak 64K from disk for the next stage
-disk_read_64K:
+; read 8K from disk for the next stage
+disk_read_8K:
     pusha
     xor di, di                      ; reset retry counter
     mov bx, START_STAGE2            ; set buffer for sector
-    mov ax, 0x0280                  ;
-    mov cx, 0x0002                  ; Set up registers for reading 64K from disk
+    mov ax, 0x0210                  ;
+    mov cx, 0x0002                  ; Set up registers for reading 8K from disk (16 sectors)
     mov dx, 0x0080                  ;
 .retry:
     int 0x13                        ; call BIOS interrupt

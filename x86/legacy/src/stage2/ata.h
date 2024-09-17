@@ -236,6 +236,10 @@ typedef enum {
 // TODO: Device struct
 // TODO: Gather all info about the device
 
+void ata_io_dump_err_reg(ata_io_base_t *ports);
+
+void ata_io_dump_stat_reg(ata_io_base_t *ports);
+
 /**
  * @brief Gets the physical address of an ATA I/O base register.
  *
@@ -281,10 +285,8 @@ void ata_io_400ns_delay(ata_io_base_t *ports);
 
 bool ata_io_drive_polling(ata_io_base_t *ports);
 
-bool ata_io_read_sector(uint32_t LBA28);
+bool ata_io_read_sector(ata_io_base_t *ports, uint32_t LBA28, uint32_t *buff);
 
-void ata_io_dump_err_reg(ata_io_base_t *ports);
-
-void ata_io_dump_stat_reg(ata_io_base_t *ports);
+void ata_io_read_sectors(uint16_t count);
 
 #endif //ATA_H

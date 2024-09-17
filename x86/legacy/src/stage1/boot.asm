@@ -18,7 +18,7 @@ _start:
     mov sp, START_STAGE1                    ; setup stack pointer
 
     ; prepare for 32-bit Protected Mode
-    call disk_read_64K                      ; read 64K from disk
+    call disk_read_8K                      ; read 8K from disk
     call ena20                              ; enable a20 line
     call enpm                               ; enable 32-bit Protected Mode
 

@@ -8,8 +8,11 @@
 static ata_io_base_t ata_io_base = { 0 };
 static ata_ports_map_t ata_ports_map = { 0 };
 
-// Address of first disk sector NOT read via BIOS call
-static uint16_t *sector_buff = (uint16_t *) 0x7E80;
+//
+static uint32_t *ata_io_base_sect = (uint32_t *) 0xFFE00;
+
+// LBA of first disk sector NOT read via BIOS call
+const static uint32_t ata_io_base_LBA = 0x10;
 
 void ata_init(void) {
     // detect port addresses
@@ -18,7 +21,14 @@ void ata_init(void) {
     ata_io_detect_connected_drives(&ata_io_base);
 }
 
-bool ata_io_read_sector(uint32_t LBA28) {
+void ata_io_read_sectors(uint16_t count) {
+    uint16_t offset = 0;
+    while (ata_io_read_sector(&ata_io_base, ata_io_base_LBA + offset++, ata_io_base_sect += 0x200) && count-- != 0)
+        ;
+    log_info("Finished reading sectors");
+}
+
+bool ata_io_read_sector(ata_io_base_t *ports, uint32_t LBA28, uint32_t *buff) {
     // set up "master" drive
     ata_io_write_drv_reg(0xE0 | LBA28 >> 24 & 0x0F);
 
@@ -35,24 +45,22 @@ bool ata_io_read_sector(uint32_t LBA28) {
     ata_io_write_cmd_reg(CMD_READ);
 
     // wait for disk
-    // delay 400 ns for BSY to be set
-    if(ata_io_drive_polling(&ata_io_base)) {
+    // delay 400 ns for BSY bit to be cleared
+    if(ata_io_drive_polling(ports)) {
         // read 256 words (512 bytes of data)
         for (size_t i = 0; i < 256; i++) {
-            ata_io_read_data_reg(&ata_io_base);
-            *(sector_buff + i*2) = ata_io_base.data_reg;
+            ata_io_read_data_reg(ports);
+            *(buff + i*2) = ports->data_reg;
         }
-
-        log_ok("Reading data from sector");
         return true;
     }
 
     // wait for disk
-    ata_io_400ns_delay(&ata_io_base);
+    ata_io_400ns_delay(ports);
 
     // dump status and error registers if error occurs
-    ata_io_dump_stat_reg(&ata_io_base);
-    ata_io_dump_err_reg(&ata_io_base);
+    ata_io_dump_stat_reg(ports);
+    ata_io_dump_err_reg(ports);
     log_fail("Reading data from sector");
     return false;
 }
@@ -66,11 +74,12 @@ void ata_io_detect_ports(ata_ports_map_t *map) {
 }
 
 void ata_io_detect_connected_drives(ata_io_base_t *ports) {
+    const char *msg = "Looking for connected drives";
     ata_io_read_stat_reg(ports);
     if (ports->stat_and_cmd_reg == ATA_FLOATING_BUS) {
-        log_fail("Bus is floating");
+        log_fail(msg);
     } else {
-        log_ok("Drive is connected");
+        log_ok(msg);
     }
 }
 
@@ -239,7 +248,7 @@ void ata_io_400ns_delay(ata_io_base_t *ports) {
 bool ata_io_drive_polling(ata_io_base_t *ports) {
     ata_io_400ns_delay(ports);
 
-    while (1) {
+    while (true) {
         ata_io_read_stat_reg(ports);
         if ((ports->stat_and_cmd_reg & BSY) != true) {
             break;
@@ -265,6 +274,5 @@ bool ata_io_drive_polling(ata_io_base_t *ports) {
     }
 
     // no errors
-    log_ok("Polling disk complete");
     return true;
 }
