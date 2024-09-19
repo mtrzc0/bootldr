@@ -58,7 +58,7 @@ void bputc(char chr, char style) {
     vga_cursor_update();
 }
 
-void bprintf(const char *str) {
+void printb(const char *str) {
     for(size_t i = 0; str[i] != '\0'; i++) {
         bputc(str[i], VGA_STYLE_TEXT);
     }
@@ -73,7 +73,7 @@ void log_ok(const char *str) {
     bputc(msg[4], VGA_STYLE_TEXT);
     bputc(msg[5], VGA_STYLE_TEXT);
     bputc(msg[6], VGA_STYLE_TEXT);
-    bprintf(str);
+    printb(str);
     bputc('\n', VGA_STYLE_TEXT);
 }
 
@@ -86,7 +86,7 @@ void log_fail(const char *str) {
     bputc(msg[4], VGA_STYLE_LOG_FAIL);
     bputc(msg[5], VGA_STYLE_TEXT);
     bputc(msg[6], VGA_STYLE_TEXT);
-    bprintf(str);
+    printb(str);
     bputc('\n', VGA_STYLE_TEXT);
 }
 
@@ -99,6 +99,6 @@ void log_info(const char *str) {
     bputc(msg[4], VGA_STYLE_LOG_INFO);
     bputc(msg[5], VGA_STYLE_TEXT);
     bputc(msg[6], VGA_STYLE_TEXT);
-    bprintf(str);
+    printb(str);
     bputc('\n', VGA_STYLE_TEXT);
 }

@@ -3,9 +3,10 @@
 
 int bmain(void) {
     vga_init();
-    ata_init();
+    // set up IDE controller in compatibility mode
+    ide_init();
     // BIOS read first 16 sectors ~ 8K
     // FIXME: hanging
-    ata_io_read_sectors(2864);
+    // ata_io_read_sectors(2864);
     return 0;
 }

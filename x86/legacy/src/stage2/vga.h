@@ -112,7 +112,7 @@ void bputc(char chr, char style);
  *
  * @param str The null-terminated string to output.
  */
-void bprintf(const char *str);
+void printb(const char *str);
 
 
 /**
