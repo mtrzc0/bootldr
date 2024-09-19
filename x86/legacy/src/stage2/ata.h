@@ -6,6 +6,7 @@
 #include "sys.h"
 
 #define ATA_FLOATING_BUS 0xFF
+#define EMPTY 0x00
 
 // defines for BARs when PCI channel is in compatibility mode
 // otherwise, we detect the BARs from the PCI configuration space
@@ -26,7 +27,12 @@ typedef enum {
     ATA_PRIMARY,
     ATA_SECONDARY,
     ATA_CHANNELS_COUNT,
-} ata_channels_t;
+} ata_channel_t;
+
+typedef enum {
+    ATA_IO,
+    ATA_CTRL
+} ata_channel_base_t;
 
 typedef enum {
     ATA_REG_DATA,
@@ -127,151 +133,28 @@ typedef enum {
     IDE_ATAPI = 0x01,
 } ide_dev_t;
 
-/**
- * @brief Reads a register from the ATA I/O ports.
- *
- * This function reads the value from the specified ATA I/O port register
- * based on the provided channel and offset.
- *
- * @param channel The ATA channel (primary or secondary).
- * @param offset The offset of the ATA I/O port register to read.
- * @return The value read from the specified register.
- */
-uint16_t ata_io_read_reg(ata_channels_t channel, ata_io_base_t offset);
+uint16_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
-/**
- * @brief Writes a value to a register in the ATA I/O ports.
- *
- * This function writes a value to the specified ATA I/O port register
- * based on the provided channel and offset.
- *
- * @param channel The ATA channel (primary or secondary).
- * @param offset The offset of the ATA I/O port register to write to.
- * @param data The value to write to the register.
- */
-void ata_io_write_reg(ata_channels_t channel, ata_io_base_t offset, uint8_t data);
+void ata_write_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset, uint8_t data);
 
-/**
- * @brief Reads a register from the ATA control ports.
- *
- * This function reads the value from the specified ATA control port register
- * based on the provided channel and offset.
- *
- * @param channel The ATA channel (primary or secondary).
- * @param offset The offset of the ATA control port register to read.
- * @return The value read from the specified register.
- */
-uint16_t ata_ctrl_read_reg(ata_channels_t channel, ata_ctrl_base_t offset);
+void ata_dump_err_reg(ata_channel_t channel);
 
-/**
- * @brief Writes a value to a register in the ATA control ports.
- *
- * This function writes a value to the specified ATA control port register
- * based on the provided channel and offset.
- *
- * @param channel The ATA channel (primary or secondary).
- * @param offset The offset of the ATA control port register to write to.
- * @param data The value to write to the register.
- */
-void ata_ctrl_write_reg(ata_channels_t channel, ata_ctrl_base_t offset, uint8_t data);
+void ata_dump_stat_reg(ata_channel_t channel);
 
-/**
- * @brief Dumps the error register of the ATA I/O ports.
- *
- * This function reads and logs the contents of the error register
- * from the specified ATA channel.
- *
- * @param channel The ATA channel (primary or secondary).
- */
-void ata_io_dump_err_reg(ata_channels_t channel);
+uint16_t ata_addr(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
-/**
- * @brief Dumps the status register of the ATA I/O ports.
- *
- * This function reads and logs the contents of the status register
- * from the specified ATA channel.
- *
- * @param channel The ATA channel (primary or secondary).
- */
-void ata_io_dump_stat_reg(ata_channels_t channel);
+void ata_init(void);
 
-/**
- * @brief Gets the address of an ATA I/O port.
- *
- * This function calculates the address of the specified ATA I/O port
- * based on the provided channel and port number.
- *
- * @param channel The ATA channel (primary or secondary).
- * @param port The port number.
- * @return The address of the specified ATA I/O port.
- */
-uint16_t ata_io_addr(ata_channels_t channel, uint32_t port);
+void ata_detect_ports(uint32_t BAR0, uint32_t BAR1, uint32_t BAR2, uint32_t BAR3, uint32_t BAR4);
 
-/**
- * @brief Gets the address of an ATA control port.
- *
- * This function calculates the address of the specified ATA control port
- * based on the provided channel and port number.
- *
- * @param channel The ATA channel (primary or secondary).
- * @param port The port number.
- * @return The address of the specified ATA control port.
- */
-uint16_t ata_ctrl_addr(ata_channels_t channel, uint32_t port);
+void ata_detect_devices(void);
 
-void ide_init(void);
+void ata_400ns_delay(ata_channel_t channel);
 
-void ata_io_detect_ports(uint32_t BAR0, uint32_t BAR1, uint32_t BAR2, uint32_t BAR3, uint32_t BAR4);
+bool ata_drive_polling(ata_channel_t channel);
 
-/**
- * @brief Detects the storage devices connected to the ATA channels.
- *
- * This function detects the storage devices connected to the ATA channels
- * and initializes the necessary structures.
- */
-void ata_io_detect_storage_devs(void);
+bool ata_read_sector(ata_channel_t channel, uint32_t LBA48, uint32_t *buff);
 
-/**
- * @brief Delays for approximately 400 nanoseconds.
- *
- * This function introduces a delay of approximately 400 nanoseconds
- * by reading the status register multiple times.
- *
- * @param channel The ATA channel (primary or secondary).
- */
-void ata_io_400ns_delay(ata_channels_t channel);
-
-/**
- * @brief Polls the ATA drive for readiness.
- *
- * This function polls the ATA drive by reading the status register from the specified
- * ATA channel until the drive is ready for the next command.
- *
- * @param channel The ATA channel (primary or secondary).
- * @return True if the drive is ready, false otherwise.
- */
-bool ata_io_drive_polling(ata_channels_t channel);
-
-/**
- * @brief Reads a sector from the ATA drive.
- *
- * This function reads a sector from the ATA drive using the provided LBA48 address
- * and stores the data in the provided buffer.
- *
- * @param channel The ATA channel (primary or secondary).
- * @param LBA48 The 48-bit Logical Block Addressing address of the sector to read.
- * @param buff Pointer to the buffer where the read data will be stored.
- * @return True if the sector was read successfully, false otherwise.
- */
-bool ata_io_read_sector(ata_channels_t channel, uint32_t LBA48, uint32_t *buff);
-
-/**
- * @brief Reads multiple sectors from the ATA drive.
- *
- * This function reads the specified number of sectors from the ATA drive.
- *
- * @param count The number of sectors to read.
- */
-void ata_io_read_sectors(uint16_t count);
+void ata_read_sectors(uint16_t count);
 
 #endif //ATA_H
