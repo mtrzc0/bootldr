@@ -1,4 +1,5 @@
 #include "vga.h"
+
 #include "sys.h"
 
 static const uint16_t VGA_WIDTH = 80;

@@ -1,7 +1,6 @@
-#include "ata.h"
-
 #include <stdbool.h>
 
+#include "ata.h"
 #include "sys.h"
 #include "vga.h"
 
@@ -78,7 +77,7 @@ void ata_detect_devices(void) {
 
     // gather information about the drives using IDENTIFY command
     while (channel < ATA_CHANNELS_COUNT) {
-        log_info("Checking next channel");
+        log_info(channel ? "Detecting ATA devices on SECONDARY channel" : "Detecting for ATA devices on PRIMARY channel");
         // 1. select a target drive by sending bytes to the drive select port
         //    + 0xA0 for the master drive
         //    + 0xB0 for the slave drive
@@ -103,7 +102,7 @@ void ata_detect_devices(void) {
             } else if (atapi0 == 0x69 && atapi1 == 0x96) {
                 log_ok("ATAPI device detected");
             } else {
-                log_fail("Detecting ATAPI devices");
+                log_fail("Device is NOT ATAPI");
             }
         } else {
             log_ok("ATA device detected");

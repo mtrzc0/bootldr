@@ -1,6 +1,15 @@
 #ifndef SYS_H
 #define SYS_H
 
+// this macro emulates the behavior of the log10 function for unsigned integers
+#define LOG10(x) ((x) < 10 ? 0 : \
+                 ((x) < 100 ? 1 : \
+                 ((x) < 1000 ? 2 : -1)))
+
+// global for functions that return stack allocated strings
+// use this in single threaded environment without heap
+static char *_strtemp;
+
 typedef unsigned int size_t;
 typedef unsigned char uchar_t;
 typedef unsigned short wchar_t; // 16-bit Unicode character
@@ -98,6 +107,8 @@ void memcpy(void *dest, const void *src, size_t count);
  * @param str A pointer to the null-terminated string.
  * @return The length of the string including the null terminator.
  */
-inline size_t strlen(const char *str);
+size_t strlen(const char *str);
+
+char *strformat(const char *str, uint16_t num);
 
 #endif //SYS_H

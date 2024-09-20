@@ -1,11 +1,47 @@
 #include "sys.h"
 
-inline size_t strlen(const char *str) {
+size_t strlen(const char *str) {
     // Loop over the null terminated string, stop at '\0' character
     size_t len;
     for (len = 0; str[len] != '\0'; len++)
         ;
     return len + 1;
+}
+
+char *strformat(const char *str, uint16_t num) {
+    const size_t strl = strlen(str);
+    const size_t numl = LOG10(num) + 1;
+    char digits[numl];
+    const size_t resl = strl + numl - 1;
+    char res[resl];
+
+    // convert number to string
+    if (numl > 0) {
+        for (size_t i = 0; i < numl; i++) {
+            digits[i] = num % 10 + '0';
+            num /= 10;
+        }
+    }
+
+    // format string
+    for(size_t i = 0; str[i] != '\0'; i++) {
+        switch (str[i]) {
+            case '%':
+                if (str[i+1] == 'd') {
+                    for (size_t j = 0; j < numl; j++) {
+                        res[i+j] = digits[numl-1-j];
+                    }
+                    i++;
+                }
+                break;
+            default:
+                // copy char to result string
+                res[i] = str[i];
+                break;
+        }
+    }
+    memcpy(_strtemp, res, resl);
+    return _strtemp;
 }
 
 void memcpy(void *dest, const void *src, size_t count) {
