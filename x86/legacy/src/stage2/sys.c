@@ -1,5 +1,14 @@
 #include "sys.h"
 
+uint16_t numlen(uint32_t num) {
+    uint16_t len = 0;
+    while (num > 0) {
+        num /= 10;
+        len++;
+    }
+    return len;
+}
+
 size_t strlen(const char *str) {
     // Loop over the null terminated string, stop at '\0' character
     size_t len;
@@ -8,9 +17,9 @@ size_t strlen(const char *str) {
     return len + 1;
 }
 
-char *strformat(const char *str, uint16_t num) {
+char *strformat(const char *str, uint32_t num) {
     const size_t strl = strlen(str);
-    const size_t numl = LOG10(num) + 1;
+    const size_t numl = numlen(num);
     char digits[numl];
     const size_t resl = strl + numl - 1;
     char res[resl];

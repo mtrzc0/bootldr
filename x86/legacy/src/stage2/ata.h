@@ -6,7 +6,6 @@
 #include "sys.h"
 
 #define ATA_FLOATING_BUS 0xFF
-#define EMPTY 0x00
 
 // defines for BARs when PCI channel is in compatibility mode
 // otherwise, we detect the BARs from the PCI configuration space
@@ -77,6 +76,12 @@ typedef enum {
 } stat_reg_bitmask_t;
 
 typedef enum {
+    ATA_CR_nIEN = 0x02,     // Disable interrupts
+    ATA_CR_SRST = 0x04,     // Software reset
+    ATA_CR_HOB = 0x80,      // Read High Order Byte of the last LBA48 value sent to IO port
+} dev_ctrl_reg_bitmask_t;
+
+typedef enum {
     ATA_CMD_READ = 0x20,            // Read sectors
     ATA_CMD_READ_EXT = 0x24,        // Read sectors extended
     ATA_CMD_READ_DMA = 0xC8,        // Read sectors using DMA
@@ -126,12 +131,12 @@ typedef enum {
 typedef enum {
     ATA_MASTER = 0x00,
     ATA_SLAVE = 0x01,
-} ata_dev_t;
+} ata_dev_drive_t;
 
 typedef enum {
     IDE_ATA = 0x00,
     IDE_ATAPI = 0x01,
-} ide_dev_t;
+} ide_dev_type_t;
 
 uint16_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
@@ -141,6 +146,8 @@ void ata_dump_err_reg(ata_channel_t channel);
 
 void ata_dump_stat_reg(ata_channel_t channel);
 
+void ata_dump_drv_info(ide_device_t dev);
+
 uint16_t ata_addr(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
 void ata_init(void);
@@ -149,9 +156,13 @@ void ata_detect_ports(uint32_t BAR0, uint32_t BAR1, uint32_t BAR2, uint32_t BAR3
 
 void ata_detect_devices(void);
 
+void ata_check_float_bus(void);
+
+void ata_disable_irqs(void);
+
 void ata_400ns_delay(ata_channel_t channel);
 
-bool ata_drive_polling(ata_channel_t channel);
+uint8_t ata_drive_polling(ata_channel_t channel);
 
 bool ata_read_sector(ata_channel_t channel, uint32_t LBA48, uint32_t *buff);
 
