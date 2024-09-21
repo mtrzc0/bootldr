@@ -6,6 +6,7 @@
 #include "sys.h"
 
 #define ATA_FLOATING_BUS 0xFF
+#define ATA_NO_DEVICE -1
 
 // defines for BARs when PCI channel is in compatibility mode
 // otherwise, we detect the BARs from the PCI configuration space
@@ -20,7 +21,7 @@ typedef struct {
     uint16_t ctrl;     // Control Base
     uint16_t bmide;    // Bus Master IDE
     uint16_t nIEN;     // Disable interrupt
-} ide_channels_regs_t;
+} ata_channels_regs_t;
 
 typedef enum {
     ATA_PRIMARY,
@@ -112,7 +113,7 @@ typedef struct {
     uint32_t command_sets; // Command Sets Supported
     uint32_t size;         // Size in Sectors
     uint8_t model[41];     // Model in string
-} ide_device_t;
+} ata_dev_t;
 
 typedef enum {
     ATA_IDENT_DEVICETYPE = 0,       // Device type
@@ -129,16 +130,20 @@ typedef enum {
 } ata_dev_ident_t;
 
 typedef enum {
-    ATA_MASTER = 0x00,
-    ATA_SLAVE = 0x01,
+    ATA_MASTER,
+    ATA_SLAVE,
+    ATA_DRIVE_COUNT,
 } ata_dev_drive_t;
 
 typedef enum {
-    IDE_ATA = 0x00,
-    IDE_ATAPI = 0x01,
-} ide_dev_type_t;
+    ATA_DEV_PATA,
+    ATA_DEV_SATA,
+    ATA_DEV_ATAPI,
+    ATA_DEV_UNKNOWN,
+} ata_dev_type_t;
 
-uint16_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
+// WARNING: This function should not be used in reading data from the drive!!
+uint8_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
 void ata_write_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset, uint8_t data);
 
@@ -146,7 +151,7 @@ void ata_dump_err_reg(ata_channel_t channel);
 
 void ata_dump_stat_reg(ata_channel_t channel);
 
-void ata_dump_drv_info(ide_device_t dev);
+void ata_dump_drv_info(ata_dev_t dev);
 
 uint16_t ata_addr(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
@@ -160,9 +165,11 @@ void ata_check_float_bus(void);
 
 void ata_disable_irqs(void);
 
-void ata_400ns_delay(ata_channel_t channel);
+void ata_srst(ata_channel_t channel);
 
-uint8_t ata_drive_polling(ata_channel_t channel);
+void ata_delay(ata_channel_t channel, uint32_t ms);
+
+int8_t ata_drive_poll(ata_channel_t channel);
 
 bool ata_read_sector(ata_channel_t channel, uint32_t LBA48, uint32_t *buff);
 

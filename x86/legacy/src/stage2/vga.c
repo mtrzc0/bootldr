@@ -103,3 +103,16 @@ void log_info(const char *str) {
     printb(str);
     bputc('\n', VGA_STYLE_TEXT);
 }
+
+void log_warn(const char *str) {
+    const char *msg = "[WARN] ";
+    bputc(msg[0], VGA_STYLE_TEXT);
+    bputc(msg[1], VGA_STYLE_LOG_WARN);
+    bputc(msg[2], VGA_STYLE_LOG_WARN);
+    bputc(msg[3], VGA_STYLE_LOG_WARN);
+    bputc(msg[4], VGA_STYLE_LOG_WARN);
+    bputc(msg[5], VGA_STYLE_TEXT);
+    bputc(msg[6], VGA_STYLE_TEXT);
+    printb(str);
+    bputc('\n', VGA_STYLE_TEXT);
+}

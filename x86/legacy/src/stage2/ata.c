@@ -5,9 +5,9 @@
 #include "vga.h"
 
 // globals
-static ide_channels_regs_t ide_bus[2] = { 0 };
-static ide_device_t ide_devices[4] = { 0 };
-static uint8_t *ide_buf;
+static ata_channels_regs_t ata_bus[2] = { 0 };
+static ata_dev_t ata_devs[4] = { 0 };
+static uint8_t *ata_buf;
 
 // TODO: add support for Interrupts
 // volatile static uint8_t ide_irq_invoked = 0;
@@ -39,7 +39,6 @@ void ata_init(void) {
 
 void ata_read_sectors(uint16_t count) {
     // TODO
-    log_info("Finished reading sectors");
 }
 
 bool ata_read_sector(ata_channel_t channel, uint32_t LBA28, uint32_t *buff) {
@@ -51,18 +50,18 @@ void ata_detect_ports(const uint32_t BAR0, const uint32_t BAR1, const uint32_t B
     (void) BAR4;
     if (BAR0 == ATA_COMPAT_BAR0 && BAR1 == ATA_COMPAT_BAR1 &&
         BAR2 == ATA_COMPAT_BAR2 && BAR3 == ATA_COMPAT_BAR3) {
-        log_info("Using default ATA controller ports");
+        log_info("Using legacy PCI disk controller ports");
     } else {
-        log_info("Using custom ATA controller ports");
+        log_warn("Using custom PCI disk controller ports");
     }
 
     // set up the base and control ports for the primary and secondary channels
-    ide_bus[ATA_PRIMARY  ].base  = (BAR0 & 0xFFFFFFFC) + 0x1F0 * !BAR0;
-    ide_bus[ATA_PRIMARY  ].ctrl  = (BAR1 & 0xFFFFFFFC) + 0x3F6 * !BAR1;
-    ide_bus[ATA_SECONDARY].base  = (BAR2 & 0xFFFFFFFC) + 0x170 * !BAR2;
-    ide_bus[ATA_SECONDARY].ctrl  = (BAR3 & 0xFFFFFFFC) + 0x376 * !BAR3;
-    ide_bus[ATA_PRIMARY  ].bmide = (BAR4 & 0xFFFFFFFC) + 0; // Bus Master IDE
-    ide_bus[ATA_SECONDARY].bmide = (BAR4 & 0xFFFFFFFC) + 8; // Bus Master IDE
+    ata_bus[ATA_PRIMARY  ].base  = (BAR0 & 0xFFFFFFFC) + 0x1F0 * !BAR0;
+    ata_bus[ATA_PRIMARY  ].ctrl  = (BAR1 & 0xFFFFFFFC) + 0x3F6 * !BAR1;
+    ata_bus[ATA_SECONDARY].base  = (BAR2 & 0xFFFFFFFC) + 0x170 * !BAR2;
+    ata_bus[ATA_SECONDARY].ctrl  = (BAR3 & 0xFFFFFFFC) + 0x376 * !BAR3;
+    ata_bus[ATA_PRIMARY  ].bmide = (BAR4 & 0xFFFFFFFC) + 0; // Bus Master IDE
+    ata_bus[ATA_SECONDARY].bmide = (BAR4 & 0xFFFFFFFC) + 8; // Bus Master IDE
 }
 
 void ata_disable_irqs(void) {
@@ -73,69 +72,103 @@ void ata_disable_irqs(void) {
 }
 
 void ata_check_float_bus(void) {
-    uint8_t dev_count = 0, channel = 0, status = 0;
+    uint8_t status = 0, channel_count = 0, channel = 0;
 
     // prepare the IO ports by reading them before writing to them
     // detect possible devices on the bus
     while (channel < ATA_CHANNELS_COUNT) {
-            status = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
-            if (status == ATA_FLOATING_BUS) {
-                log_fail(!channel ? "Primary channel is floating" :
-                                    "Secondary channel is floating");
-            } else {
-                dev_count++;
-            }
+        status = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
+        if (status == ATA_FLOATING_BUS) {
+            log_warn(!channel ? "Primary channel bus might be floating" :
+                                "Secondary channel bus might be floating");
+        } else {
+            channel_count++;
+        }
         channel++;
     }
 
     // tell how many POSSIBLE disk devices were detected
-    log_info(strformat("Number of POSSIBLE disk devices: %d", dev_count));
+    log_info(strformat("Number of reserved bus channels: %d", channel_count));
 }
 
 void ata_detect_devices(void) {
-    uint8_t channel = 0, status = 0;
+    uint8_t status = 0, dev_count = 0, type = 0;
+    bool reserved = false, err = false;
 
     // gather information about the drives using IDENTIFY command
-    channel = 0;
-    while (channel < ATA_CHANNELS_COUNT) {
+    for (uint8_t channel = 0; channel < ATA_CHANNELS_COUNT; channel++) {
         log_info(channel ? "Detecting ATA devices on SECONDARY channel" :
-                            "Detecting ATA devices on PRIMARY channel");
-        // 1. select a target drive by sending bytes to the drive select port
-        //    + 0xA0 for the master drive
-        //    + 0xB0 for the slave drive
-        ata_write_reg(ATA_IO, channel, ATA_REG_HD_DEV_SEL, 0xA0 | channel << 4);
+                           "Detecting ATA devices on PRIMARY channel");
+        for (uint8_t drive = 0; drive < ATA_DRIVE_COUNT; drive++) {
+            log_info(drive ? "Detecting slave drive" :
+                             "Detecting master drive");
+            // 1. select a target drive by sending bytes to the drive select port
+            //    + 0xA0 for the master drive
+            //    + 0xB0 for the slave drive
+            ata_write_reg(ATA_IO, channel, ATA_REG_HD_DEV_SEL, 0xA0 | drive << 4);
+            ata_delay(channel, 1);
 
-        // 2. set sector count, lba0, lba1, lba2 to 0
-        ata_write_reg(ATA_IO, channel, ATA_REG_SECT_COUNT0, 0x00);
-        ata_write_reg(ATA_IO, channel, ATA_REG_LBA0, 0x00);
-        ata_write_reg(ATA_IO, channel, ATA_REG_LBA1, 0x00);
-        ata_write_reg(ATA_IO, channel, ATA_REG_LBA2, 0x00);
+            // 2. set sector count, lba0, lba1, lba2 to 0
+            ata_write_reg(ATA_IO, channel, ATA_REG_SECT_COUNT0, 0x00);
+            ata_write_reg(ATA_IO, channel, ATA_REG_LBA0, 0x00);
+            ata_write_reg(ATA_IO, channel, ATA_REG_LBA1, 0x00);
+            ata_write_reg(ATA_IO, channel, ATA_REG_LBA2, 0x00);
 
-        // 3. send the IDENTIFY command to the command port
-        ata_write_reg(ATA_IO, channel, ATA_REG_CMD_STAT, ATA_CMD_IDENTIFY);
+            // 3. send the IDENTIFY command to the command port
+            ata_write_reg(ATA_IO, channel, ATA_REG_CMD_STAT, ATA_CMD_IDENTIFY);
 
-        // 4. check status register (a byte) for any other value than 0x00 poll the drive
-        status = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
-        if (status == 0x00) {
-            log_fail("Unknown device type");
-        } else if (ata_drive_polling(channel) & ATA_SR_ERR) {
-            log_fail("ATA device may not exist, try to detect ATAPI device");
-            // check device type by reading "signature" bytes
-            const uint8_t dev_type0 = ata_read_reg(ATA_IO, channel, ATA_REG_LBA1);
-            const uint8_t dev_type1 = ata_read_reg(ATA_IO, channel, ATA_REG_LBA2);
-
-            // information about the device type
-            if (dev_type0 == 0x14 && dev_type1 == 0xEB) {
-                log_ok("ATAPI device detected");
-            } else if (dev_type0 == 0x69 && dev_type1 == 0x96) {
-                log_ok("ATAPI device detected");
-            } else if (dev_type0 == 0x3c && dev_type1 == 0xc3) {
-                log_ok("SATA device detected");
+            // 4. check status register
+            status = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
+            if (!(status & (ATA_SR_BSY | ATA_SR_DRQ))) {
+                log_fail("Device not detected");
+                reserved = false;
+                continue;
             }
-        } else {
-            log_ok("PATA device detected");
+
+            // + poll the drive
+            if (ata_drive_poll(channel) == ATA_NO_DEVICE) {
+                // device is not ATA
+                err = true;
+                log_warn("ATA device not detected trying ATAPI");
+            }
+
+            if (err) {
+                // check device type by reading "signature" bytes
+                const uint8_t dev_type0 = ata_read_reg(ATA_IO, channel, ATA_REG_LBA1);
+                const uint8_t dev_type1 = ata_read_reg(ATA_IO, channel, ATA_REG_LBA2);
+
+                // information about the device type
+                reserved = true;
+                if (dev_type0 == 0x14 && dev_type1 == 0xEB) {
+                    log_ok("ATAPI device detected");
+                    type = ATA_DEV_ATAPI;
+                } else if (dev_type0 == 0x69 && dev_type1 == 0x96) {
+                    log_ok("ATAPI device detected");
+                    type = ATA_DEV_ATAPI;
+                } else if (dev_type0 == 0x3c && dev_type1 == 0xc3) {
+                    log_ok("SATA device detected");
+                    type = ATA_DEV_SATA;
+                } else {
+                    log_fail("Unknown device type");
+                    continue;
+                }
+
+                // send the IDENTIFY PACKET command to the command port
+                ata_write_reg(ATA_IO, channel, ATA_REG_CMD_STAT, ATA_CMD_IDENTIFY_PACKET);
+                ata_delay(channel, 1);
+            } else {
+                log_ok("PATA device detected");
+                reserved = true;
+                type = ATA_DEV_PATA;
+            }
+            ata_devs[dev_count].reserved = reserved;
+            ata_devs[dev_count].type = type;
+            ata_devs[dev_count].drive = drive;
+            ata_devs[dev_count].channel = channel;
+            // TODO: read the IDENTIFY data
+            dev_count++;
         }
-        ++channel;
+        ata_srst(channel);
     }
 }
 
@@ -144,9 +177,9 @@ void ata_write_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint3
     outb(port, data);
 }
 
-uint16_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset) {
+uint8_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset) {
     const uint16_t port = ata_addr(channel_base, channel, offset);
-    return inw(port);
+    return inb(port);
 }
 
 void ata_dump_err_reg(ata_channel_t channel) {
@@ -162,64 +195,68 @@ void ata_dump_err_reg(ata_channel_t channel) {
 }
 
 void ata_dump_stat_reg(ata_channel_t channel) {
-    const uint16_t reg = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
+    const uint8_t status = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
 
-    if (reg & ATA_SR_ERR) {
+    if (status & ATA_SR_ERR) {
         log_fail("Error bit is NOT 0");
         ata_dump_err_reg(channel);
     }
-    if (reg & ATA_SR_IDX) {
+    if (status & ATA_SR_IDX) {
         log_fail("Index bit is NOT 0");
     }
-    if (reg & ATA_SR_CORR) {
+    if (status & ATA_SR_CORR) {
         log_fail("Corrected data bit is NOT 0");
     }
-    if (reg & ATA_SR_DRQ) {
+    if (status & ATA_SR_DRQ) {
         log_info("Data to transfer ready");
     }
-    if (reg & ATA_SR_SRV) {
-        log_info("Overlapped Mode Service Request");
+    if (status & ATA_SR_SRV) {
+        log_warn("Overlapped Mode Service Request");
     }
-    if (reg & ATA_SR_DF) {
+    if (status & ATA_SR_DF) {
         log_fail("Device fault");
     }
-    if (reg & ATA_SR_RDY) {
+    if (status & ATA_SR_RDY) {
         log_info("Drive is ready");
     }
-    if (reg & ATA_SR_BSY) {
-        log_info("Drive is busy");
+    if (status & ATA_SR_BSY) {
+        log_warn("Drive is busy");
     }
-    if (reg << 8 == 0) {
-        log_fail("ATA device may not exist, try to detect ATAPI device");
-    }
+
+}
+
+void ata_srst(ata_channel_t channel) {
+    ata_write_reg(ATA_IO, channel, ATA_REG_CTRL_ALT_STAT, ATA_CR_SRST);
+    ata_delay(channel, 1);
+    ata_write_reg(ATA_IO, channel, ATA_REG_CTRL_ALT_STAT, 0x00);
 }
 
 uint16_t ata_addr(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset) {
     switch (channel_base) {
         case ATA_IO:
-            return ide_bus[channel].base + offset;
+            return ata_bus[channel].base + offset;
         case ATA_CTRL:
-            return ide_bus[channel].ctrl + offset;
+            return ata_bus[channel].ctrl + offset;
     }
     return 0;
 }
 
-void ata_400ns_delay(ata_channel_t channel) {
-    // Delay 400 ns for BSY to be set
-    for (size_t i = 0; i < 4; i++) {
-        // Reading alternate status wastes 100 ns each time
+// TODO: add support for Interrupts and do optimization
+void ata_delay(ata_channel_t channel, uint32_t ms) {
+    for (size_t i = 0; i < ms*10; i++) {
+        // Reading alternate status wastes ~ 100 ns each time
         ata_read_reg(ATA_CTRL, channel, ATA_REG_CTRL_ALT_STAT);
     }
 }
 
-uint8_t ata_drive_polling(ata_channel_t channel) {
-    ata_400ns_delay(channel);
-
-    // wait for ATA_SR_BSY bit to be cleared
-    uint8_t status;
+int8_t ata_drive_poll(ata_channel_t channel) {
+    uint8_t status = 0;
+    ata_delay(channel, 1);
     do {
         status = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
-    } while (status & ATA_SR_BSY);
-
-    return status;
+        if (status & ATA_SR_ERR || status & ATA_SR_DF) {
+            return ATA_NO_DEVICE;
+        }
+    } while (status & ATA_SR_BSY && !(status & ATA_SR_DRQ));
+    return 0;
 }

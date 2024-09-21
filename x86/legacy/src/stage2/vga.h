@@ -47,7 +47,8 @@ enum vga_style_t {
     VGA_STYLE_TEXT = VGA_COLOR_LIGHT_GRAY,
     VGA_STYLE_LOG_OK = VGA_COLOR_LIGHT_GREEN,
     VGA_STYLE_LOG_INFO = VGA_COLOR_WHITE,
-    VGA_STYLE_LOG_FAIL = VGA_COLOR_LIGHT_RED
+    VGA_STYLE_LOG_WARN = VGA_COLOR_YELLOW,
+    VGA_STYLE_LOG_FAIL = VGA_COLOR_LIGHT_RED,
 };
 
 /* VGA text mode cursor */
@@ -144,4 +145,14 @@ void log_ok(const char *str);
  * @param str The null-terminated string to output.
  */
 void log_info(const char *str);
+
+/**
+ * Logs a warning message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating a warning message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_warn(const char *str);
 #endif //VGA_H

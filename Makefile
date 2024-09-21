@@ -54,7 +54,7 @@ LD_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH) --oformat binary
 LD_DEBUG_FLAGS := -Ttext $(ENTRY_POINT) -m $(ELF_ARCH)
 
 # QEMU run flags
-VM_FLAGS := -drive format=raw,file=$(TARGET_IMG) -net none
+VM_FLAGS := -drive format=raw,file=$(TARGET_IMG),if=ide,bus=0,unit=0,media=disk -net none
 VM_DEBUG_FLAGS := -s -S $(VM_FLAGS)
 
 # Phony targets
