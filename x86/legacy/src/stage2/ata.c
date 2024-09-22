@@ -189,15 +189,18 @@ void ata_detect_devices(void) {
             ata_devs[dev_count].drive = drive;
             ata_devs[dev_count].channel = channel;
             ata_devs[dev_count].signature = ata_ident_buf[ATA_IDENT_DEVICETYPE];
-            // FIXME: reading this data
-            // ata_devs[dev_count].features = ata_buf[ATA_IDENT_CAPABILITIES];
-            // ata_devs[dev_count].command_sets = ata_buf[ATA_IDENT_COMMANDSETS];
+            ata_devs[dev_count].features = ata_ident_buf[ATA_IDENT_CAPABILITIES];
+            ata_devs[dev_count].command_sets = ata_ident_buf[ATA_IDENT_COMMANDSETS];
 
-            // check size of the device
+            // get 32-bit size of the device
             if (ata_devs[dev_count].command_sets & 1 << 26) {
-                ata_devs[dev_count].size = ata_ident_buf[ATA_IDENT_MAX_LBA_EXT];
+                for (size_t i = 0; i < 4; i++) {
+                    ata_devs[dev_count].size |= ata_ident_buf[ATA_IDENT_MAX_LBA_EXT + i] << i*8;
+                }
             } else {
-                ata_devs[dev_count].size = ata_ident_buf[ATA_IDENT_MAX_LBA];
+                for (size_t i = 0; i < 4; i++) {
+                    ata_devs[dev_count].size |= ata_ident_buf[ATA_IDENT_MAX_LBA_EXT + i] << i*8;
+                }
             }
             // copy the model name
             for (size_t i = 0; i < 40; i += 2) {
@@ -271,7 +274,7 @@ void ata_dump_drv_info(ata_dev_t *dev) {
     log_info(strfn("ATA driver: Signature: %d", dev->signature));
     log_info(strfs("ATA driver: Features: %s", dev->features != 0 ? "Available" : "Not known"));
     log_info(strfn("ATA driver: Command sets: %d", dev->command_sets));
-    log_info(strfn("ATA driver: Device size: %d", dev->size));
+    log_info(strfn("ATA driver: Device size in bytes: %d", dev->size*512));
     log_info(strfs("ATA driver: Model: %s", (const char *)dev->model));
 }
 

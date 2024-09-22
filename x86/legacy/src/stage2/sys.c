@@ -24,7 +24,7 @@ size_t strlen(const char *str) {
 char *strfs(const char *str1, const char  *str2) {
     const size_t str1l = strlen(str1);
     const size_t str2l = strlen(str2);
-    const size_t resl = str1l + str2l - 1;
+    const size_t resl = str1l + str2l - 2;
     char res[resl];
 
     // format string
@@ -45,6 +45,7 @@ char *strfs(const char *str1, const char  *str2) {
         }
     }
     memcpy(_strtemp, res, resl);
+    _strtemp[resl-1] = '\0';
     return _strtemp;
 }
 
@@ -52,7 +53,7 @@ char *strfn(const char *str, uint32_t num) {
     const size_t strl = strlen(str);
     const size_t numl = numlen(num);
     char digits[numl];
-    const size_t resl = strl + numl - 1;
+    const size_t resl = strl + numl - 2;
     char res[resl];
 
     // convert number to string
@@ -81,6 +82,7 @@ char *strfn(const char *str, uint32_t num) {
         }
     }
     memcpy(_strtemp, res, resl);
+    _strtemp[resl-1] = '\0';
     return _strtemp;
 }
 
