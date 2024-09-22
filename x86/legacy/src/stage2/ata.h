@@ -8,6 +8,10 @@
 #define ATA_FLOATING_BUS 0xFF
 #define ATA_NO_DEVICE -1
 
+#define ATA_DEVS_MAX 4
+#define ATA_IDENT_BUF_MAX 512
+#define ATA_BUS_MAX 2
+
 // defines for BARs when PCI channel is in compatibility mode
 // otherwise, we detect the BARs from the PCI configuration space
 #define ATA_COMPAT_BAR0 0x1F0
@@ -109,7 +113,7 @@ typedef struct {
     uint8_t drive;         // 0 (Master Drive) or 1 (Slave Drive)
     uint16_t type;         // 0: ATA, 1:ATAPI
     uint16_t signature;    // Drive Signature
-    uint16_t capabilities; // Features
+    uint16_t features; // Features
     uint32_t command_sets; // Command Sets Supported
     uint32_t size;         // Size in Sectors
     uint8_t model[41];     // Model in string
@@ -136,8 +140,7 @@ typedef enum {
 } ata_dev_drive_t;
 
 typedef enum {
-    ATA_DEV_PATA,
-    ATA_DEV_SATA,
+    ATA_DEV_ATA,
     ATA_DEV_ATAPI,
     ATA_DEV_UNKNOWN,
 } ata_dev_type_t;
@@ -181,7 +184,7 @@ void ata_dump_stat_reg(ata_channel_t channel);
  *
  * @param dev The ATA device structure containing device information.
  */
-void ata_dump_drv_info(ata_dev_t dev);
+void ata_dump_drv_info(ata_dev_t *dev);
 
 /**
  * Calculates the address of a register in the specified ATA channel.
@@ -194,7 +197,7 @@ void ata_dump_drv_info(ata_dev_t dev);
 uint16_t ata_addr(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
 /**
- * Initializes the ATA subsystem.
+ * Initializes the ATA driver.
  */
 void ata_init(void);
 
@@ -235,9 +238,9 @@ void ata_srst(ata_channel_t channel);
  * Delays execution for a specified amount of time.
  *
  * @param channel The ATA channel (Primary or Secondary).
- * @param ms The delay time in milliseconds.
+ * @param ns The delay time in nanoseconds.
  */
-void ata_delay(ata_channel_t channel, uint32_t ms);
+void ata_delay(ata_channel_t channel, uint16_t ns);
 
 /**
  * Polls the specified ATA channel until it is ready.

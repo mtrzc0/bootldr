@@ -2,7 +2,7 @@
 #define SYS_H
 
 // global for functions that return stack allocated strings
-// use this in single threaded environment without heap
+// used single threaded environment without heap
 static char *_strtemp;
 
 typedef unsigned int size_t;
@@ -55,6 +55,8 @@ uint8_t inb(uint16_t port);
  */
 uint16_t inw(uint16_t port);
 
+void rep_insw(uint16_t port, void *dest, uint32_t count);
+
 /**
  * @brief Fills a block of memory with a specified value.
  *
@@ -104,6 +106,28 @@ void memcpy(void *dest, const void *src, size_t count);
  */
 size_t strlen(const char *str);
 
-char *strformat(const char *str, uint32_t num);
+/**
+ * @brief Formats a string with a number.
+ *
+ * This function takes a format string and a number, and returns a new string
+ * where the number is inserted into the format string.
+ *
+ * @param str The format string.
+ * @param num The number to insert into the format string.
+ * @return A pointer to the formatted string.
+ */
+char *strfn(const char *str, uint32_t num);
+
+/**
+ * @brief Concatenates two strings.
+ *
+ * This function takes two strings and returns a new string
+ * where the second string is appended to the first string.
+ *
+ * @param str1 The first string.
+ * @param str2 The second string to append to the first string.
+ * @return A pointer to the concatenated string.
+ */
+char *strfs(const char *str1, const char *str2);
 
 #endif //SYS_H

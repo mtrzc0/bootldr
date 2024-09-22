@@ -12,7 +12,7 @@ void vga_init(void) {
     // set up the pointer to the VGA buffer
     vga_addr = (wchar_t *) 0xB8000;
     cls();
-    log_ok("VGA init");
+    log_ok("VGA driver: init");
 }
 
 uint32_t vga_i(vga_cursor_t *cursor) {
@@ -67,12 +67,12 @@ void printb(const char *str) {
 
 void log_ok(const char *str) {
     const char *msg = "[ OK ] ";
-    bputc(msg[0], VGA_STYLE_TEXT);
+    bputc(msg[0], VGA_STYLE_BRACKET);
     bputc(msg[1], VGA_STYLE_TEXT);
     bputc(msg[2], VGA_STYLE_LOG_OK);
     bputc(msg[3], VGA_STYLE_LOG_OK);
     bputc(msg[4], VGA_STYLE_TEXT);
-    bputc(msg[5], VGA_STYLE_TEXT);
+    bputc(msg[5], VGA_STYLE_BRACKET);
     bputc(msg[6], VGA_STYLE_TEXT);
     printb(str);
     bputc('\n', VGA_STYLE_TEXT);
@@ -80,12 +80,12 @@ void log_ok(const char *str) {
 
 void log_fail(const char *str) {
     const char *msg = "[FAIL] ";
-    bputc(msg[0], VGA_STYLE_TEXT);
+    bputc(msg[0], VGA_STYLE_BRACKET);
     bputc(msg[1], VGA_STYLE_LOG_FAIL);
     bputc(msg[2], VGA_STYLE_LOG_FAIL);
     bputc(msg[3], VGA_STYLE_LOG_FAIL);
     bputc(msg[4], VGA_STYLE_LOG_FAIL);
-    bputc(msg[5], VGA_STYLE_TEXT);
+    bputc(msg[5], VGA_STYLE_BRACKET);
     bputc(msg[6], VGA_STYLE_TEXT);
     printb(str);
     bputc('\n', VGA_STYLE_TEXT);
@@ -93,12 +93,12 @@ void log_fail(const char *str) {
 
 void log_info(const char *str) {
     const char *msg = "[INFO] ";
-    bputc(msg[0], VGA_STYLE_TEXT);
+    bputc(msg[0], VGA_STYLE_BRACKET);
     bputc(msg[1], VGA_STYLE_LOG_INFO);
     bputc(msg[2], VGA_STYLE_LOG_INFO);
     bputc(msg[3], VGA_STYLE_LOG_INFO);
     bputc(msg[4], VGA_STYLE_LOG_INFO);
-    bputc(msg[5], VGA_STYLE_TEXT);
+    bputc(msg[5], VGA_STYLE_BRACKET);
     bputc(msg[6], VGA_STYLE_TEXT);
     printb(str);
     bputc('\n', VGA_STYLE_TEXT);
@@ -106,12 +106,12 @@ void log_info(const char *str) {
 
 void log_warn(const char *str) {
     const char *msg = "[WARN] ";
-    bputc(msg[0], VGA_STYLE_TEXT);
+    bputc(msg[0], VGA_STYLE_BRACKET);
     bputc(msg[1], VGA_STYLE_LOG_WARN);
     bputc(msg[2], VGA_STYLE_LOG_WARN);
     bputc(msg[3], VGA_STYLE_LOG_WARN);
     bputc(msg[4], VGA_STYLE_LOG_WARN);
-    bputc(msg[5], VGA_STYLE_TEXT);
+    bputc(msg[5], VGA_STYLE_BRACKET);
     bputc(msg[6], VGA_STYLE_TEXT);
     printb(str);
     bputc('\n', VGA_STYLE_TEXT);

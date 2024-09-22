@@ -2,6 +2,9 @@
 
 uint16_t numlen(uint32_t num) {
     uint16_t len = 0;
+    if (num == 0) {
+        return 1;
+    }
     while (num > 0) {
         num /= 10;
         len++;
@@ -17,7 +20,35 @@ size_t strlen(const char *str) {
     return len + 1;
 }
 
-char *strformat(const char *str, uint32_t num) {
+// TODO: replece this procedures with proper printf implementation
+char *strfs(const char *str1, const char  *str2) {
+    const size_t str1l = strlen(str1);
+    const size_t str2l = strlen(str2);
+    const size_t resl = str1l + str2l - 1;
+    char res[resl];
+
+    // format string
+    for(size_t i = 0; str1[i] != '\0'; i++) {
+        switch (str1[i]) {
+            case '%':
+                if (str1[i+1] == 's') {
+                    for (size_t j = 0; j < str2l; j++) {
+                        res[i+j] = str2[j];
+                    }
+                    i++;
+                }
+                break;
+            default:
+                // copy char to result string
+                res[i] = str1[i];
+                break;
+        }
+    }
+    memcpy(_strtemp, res, resl);
+    return _strtemp;
+}
+
+char *strfn(const char *str, uint32_t num) {
     const size_t strl = strlen(str);
     const size_t numl = numlen(num);
     char digits[numl];

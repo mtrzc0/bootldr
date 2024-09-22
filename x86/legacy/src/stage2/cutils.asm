@@ -4,6 +4,8 @@ global outb             ; make the label outb visible outside this file
 global inb              ; make the label inb visible outside this file
 global outw             ; make the label outw visible outside this file
 global inw              ; make the label inw visible outside this file
+global outdw            ; make the label outdw visible outside this file
+global rep_insw         ; make the label rep_insw visible outside this file
 
 ; outb - send a byte to an I/O port
 ; stack: [esp + 8] the data byte
@@ -58,3 +60,15 @@ indw:
     mov dx, [esp + 4]    ; move the address of the I/O port into the edx register
     in eax, dx           ; read a double word from the I/O port
     ret                  ; return to the calling function
+
+; rep_insw - read multiple words from an I/O port
+; stack: [esp + 12] the number of words to read
+;        [esp + 8] address of the buffer to store the data
+;        [esp + 4] the I/O port
+;        [esp    ] return address
+rep_insw:
+    mov dx, [esp + 4]    ; move the address of the I/O port into the dx register
+    mov edi, [esp + 8]   ; move the address of the buffer into the edi register
+    mov ecx, [esp + 12]  ; move the number of words to read into the ecx register
+    rep insw             ; read multiple words from the I/O port
+    ret
