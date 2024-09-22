@@ -142,34 +142,110 @@ typedef enum {
     ATA_DEV_UNKNOWN,
 } ata_dev_type_t;
 
-// WARNING: This function should not be used in reading data from the drive!!
-uint8_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
+/**
+ * Reads a register from the specified ATA channel.
+ *
+ * @param channel_base The base address of the channel (I/O or Control).
+ * @param channel The ATA channel (Primary or Secondary).
+ * @param offset The offset of the register to read.
+ * @return The value read from the register.
+ */
+uint16_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
+/**
+ * Writes a value to a register in the specified ATA channel.
+ *
+ * @param channel_base The base address of the channel (I/O or Control).
+ * @param channel The ATA channel (Primary or Secondary).
+ * @param offset The offset of the register to write.
+ * @param data The value to write to the register.
+ */
 void ata_write_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset, uint8_t data);
 
+/**
+ * Dumps the error register of the specified ATA channel.
+ *
+ * @param channel The ATA channel (Primary or Secondary).
+ */
 void ata_dump_err_reg(ata_channel_t channel);
 
+/**
+ * Dumps the status register of the specified ATA channel.
+ *
+ * @param channel The ATA channel (Primary or Secondary).
+ */
 void ata_dump_stat_reg(ata_channel_t channel);
 
+/**
+ * Dumps the information of the specified ATA device.
+ *
+ * @param dev The ATA device structure containing device information.
+ */
 void ata_dump_drv_info(ata_dev_t dev);
 
+/**
+ * Calculates the address of a register in the specified ATA channel.
+ *
+ * @param channel_base The base address of the channel (I/O or Control).
+ * @param channel The ATA channel (Primary or Secondary).
+ * @param offset The offset of the register.
+ * @return The calculated address of the register.
+ */
 uint16_t ata_addr(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset);
 
+/**
+ * Initializes the ATA subsystem.
+ */
 void ata_init(void);
 
+/**
+ * Detects the ports of the ATA channels.
+ *
+ * @param BAR0 The base address register 0.
+ * @param BAR1 The base address register 1.
+ * @param BAR2 The base address register 2.
+ * @param BAR3 The base address register 3.
+ * @param BAR4 The base address register 4.
+ */
 void ata_detect_ports(uint32_t BAR0, uint32_t BAR1, uint32_t BAR2, uint32_t BAR3, uint32_t BAR4);
 
+/**
+ * Detects the ATA devices connected to the system.
+ */
 void ata_detect_devices(void);
 
+/**
+ * Checks if the ATA bus is floating.
+ */
 void ata_check_float_bus(void);
 
+/**
+ * Disables interrupts for the ATA channels.
+ */
 void ata_disable_irqs(void);
 
+/**
+ * Performs a software reset on the specified ATA channel.
+ *
+ * @param channel The ATA channel (Primary or Secondary).
+ */
 void ata_srst(ata_channel_t channel);
 
+/**
+ * Delays execution for a specified amount of time.
+ *
+ * @param channel The ATA channel (Primary or Secondary).
+ * @param ms The delay time in milliseconds.
+ */
 void ata_delay(ata_channel_t channel, uint32_t ms);
 
-int8_t ata_drive_poll(ata_channel_t channel);
+/**
+ * Polls the specified ATA channel until it is ready.
+ *
+ * @param channel The ATA channel (Primary or Secondary).
+ * @return 0 if successful, -1 if an error occurred.
+ */
+int8_t ata_drive_poll(ata_channel_t channel);;
 
 bool ata_read_sector(ata_channel_t channel, uint32_t LBA48, uint32_t *buff);
 

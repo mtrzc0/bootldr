@@ -79,8 +79,8 @@ void ata_check_float_bus(void) {
     while (channel < ATA_CHANNELS_COUNT) {
         status = ata_read_reg(ATA_IO, channel, ATA_REG_CMD_STAT);
         if (status == ATA_FLOATING_BUS) {
-            log_warn(!channel ? "Primary channel bus might be floating" :
-                                "Secondary channel bus might be floating");
+            log_warn(channel ? "Secondary channel bus might be floating" :
+                               "Primary channel bus might be floating");
         } else {
             channel_count++;
         }
@@ -108,6 +108,22 @@ void ata_detect_devices(void) {
             ata_write_reg(ATA_IO, channel, ATA_REG_HD_DEV_SEL, 0xA0 | drive << 4);
             ata_delay(channel, 1);
 
+            // detect slave drive
+            // this is important because master drive is answering for both if there is no slave
+            // test this with dummy values
+            if (drive) {
+                const uint8_t dummy1 = 0x12, dummy2 = 0x34;
+                ata_write_reg(ATA_IO, channel, ATA_REG_LBA1, dummy1);
+                ata_write_reg(ATA_IO, channel, ATA_REG_LBA2, dummy2);
+                ata_drive_poll(channel);
+                const uint8_t cl = ata_read_reg(ATA_IO, channel, ATA_REG_LBA1);
+                const uint8_t ch = ata_read_reg(ATA_IO, channel, ATA_REG_LBA2);
+                if (cl != dummy1 && ch != dummy1) {
+                    log_warn("No slave device detected");
+                    continue;
+                }
+            }
+
             // 2. set sector count, lba0, lba1, lba2 to 0
             ata_write_reg(ATA_IO, channel, ATA_REG_SECT_COUNT0, 0x00);
             ata_write_reg(ATA_IO, channel, ATA_REG_LBA0, 0x00);
@@ -125,7 +141,7 @@ void ata_detect_devices(void) {
                 continue;
             }
 
-            // + poll the drive
+            // poll the drive
             if (ata_drive_poll(channel) == ATA_NO_DEVICE) {
                 // device is not ATA
                 err = true;
@@ -133,19 +149,20 @@ void ata_detect_devices(void) {
             }
 
             if (err) {
-                // check device type by reading "signature" bytes
-                const uint8_t dev_type0 = ata_read_reg(ATA_IO, channel, ATA_REG_LBA1);
-                const uint8_t dev_type1 = ata_read_reg(ATA_IO, channel, ATA_REG_LBA2);
+                // check device type by reading "signature"
+                // cylinder low and high bytes
+                const uint8_t cl = ata_read_reg(ATA_IO, channel, ATA_REG_LBA1);
+                const uint8_t ch = ata_read_reg(ATA_IO, channel, ATA_REG_LBA2);
 
                 // information about the device type
                 reserved = true;
-                if (dev_type0 == 0x14 && dev_type1 == 0xEB) {
+                if (cl == 0x14 && ch == 0xEB) {
                     log_ok("ATAPI device detected");
                     type = ATA_DEV_ATAPI;
-                } else if (dev_type0 == 0x69 && dev_type1 == 0x96) {
+                } else if (cl == 0x69 && ch == 0x96) {
                     log_ok("ATAPI device detected");
                     type = ATA_DEV_ATAPI;
-                } else if (dev_type0 == 0x3c && dev_type1 == 0xc3) {
+                } else if (cl == 0x3c && ch == 0xc3) {
                     log_ok("SATA device detected");
                     type = ATA_DEV_SATA;
                 } else {
@@ -168,7 +185,6 @@ void ata_detect_devices(void) {
             // TODO: read the IDENTIFY data
             dev_count++;
         }
-        ata_srst(channel);
     }
 }
 
@@ -177,9 +193,9 @@ void ata_write_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint3
     outb(port, data);
 }
 
-uint8_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset) {
+uint16_t ata_read_reg(ata_channel_base_t channel_base, ata_channel_t channel, uint32_t offset) {
     const uint16_t port = ata_addr(channel_base, channel, offset);
-    return inb(port);
+    return inw(port);
 }
 
 void ata_dump_err_reg(ata_channel_t channel) {
