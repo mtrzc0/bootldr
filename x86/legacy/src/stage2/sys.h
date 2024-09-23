@@ -95,6 +95,8 @@ void *memsetw(wchar_t *dest, wchar_t ch, size_t count);
  */
 void memcpy(void *dest, const void *src, size_t count);
 
+void memcpyw(wchar_t *dest, wchar_t *src, size_t count);
+
 /**
  * @brief Calculates the length of a null-terminated string.
  *

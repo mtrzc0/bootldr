@@ -87,13 +87,20 @@ char *strfn(const char *str, uint32_t num) {
 }
 
 void memcpy(void *dest, const void *src, size_t count) {
-    // Cast the pointers to char pointers for byte-by-byte copying
+    // cast the pointers to char pointers for byte-by-byte copying
     char *d = (char *)dest;
     const char *s = (const char *)src;
 
-    // Copy each byte from source to destination
+    // copy each byte from source to destination
     for (size_t i = 0; i < count; i++) {
         d[i] = s[i];
+    }
+}
+
+void memcpyw(wchar_t *dest, wchar_t *src, size_t count) {
+    for (size_t i = 0; i < count; i++) {
+        // copy each wide byte from source to destination
+        dest[i] = src[i];
     }
 }
 

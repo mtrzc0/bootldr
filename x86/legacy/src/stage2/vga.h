@@ -3,6 +3,9 @@
 
 #include "sys.h"
 
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+
 #define WHITE_SPACE_ASCII 0x20
 
 /*
@@ -73,10 +76,9 @@ void vga_init(void);
  * the x and y coordinates of the cursor, and returns the corresponding index
  * in the VGA text buffer.
  *
- * @param cursor A pointer to a `vga_cursor_t` structure containing the cursor coordinates.
  * @return The index in the VGA text buffer corresponding to the cursor position.
  */
-uint32_t vga_i(vga_cursor_t *cursor);
+uint32_t vga_i(void);
 
 /**
  * Updates the VGA cursor position.
@@ -84,15 +86,25 @@ uint32_t vga_i(vga_cursor_t *cursor);
  * This function updates the position of the cursor in the VGA text buffer
  * to reflect the current cursor coordinates.
  */
-void vga_cursor_update(void);
+void vga_crs_update(void);
 
+/**
+ * Sets the VGA cursor position.
+ *
+ * This function updates the x and y coordinates of the VGA cursor
+ * to the specified values.
+ *
+ * @param x The x-coordinate of the cursor.
+ * @param y The y-coordinate of the cursor.
+ */
+void vga_crs_set(uint8_t x, uint8_t y);
 /**
  * Clears the screen.
  *
  * This function clears the VGA text buffer, effectively resetting the screen
  * to a blank state.
  */
-void cls(void);
+void vga_cls(void);
 
 /**
  * Outputs a character to the VGA text buffer with a specified style.
@@ -103,7 +115,7 @@ void cls(void);
  * @param chr The character to output.
  * @param style The style to apply to the character.
  */
-void bputc(char chr, char style);
+void putcb(char chr, char style);
 
 /**
  * Outputs a formatted string to the VGA text buffer.

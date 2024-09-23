@@ -108,15 +108,15 @@ typedef enum {
 } atapi_cmds_t;
 
 typedef struct {
-    uint8_t reserved;      // 0 (Empty) or 0x1 (This Drive is Present)
-    uint8_t channel;       // 0 (Primary Channel) or 1 (Secondary Channel)
-    uint8_t drive;         // 0 (Master Drive) or 1 (Slave Drive)
-    uint16_t type;         // 0: ATA, 1:ATAPI
-    uint16_t signature;    // Drive Signature
-    uint16_t features; // Features
-    uint32_t command_sets; // Command Sets Supported
-    uint32_t size;         // Size in Sectors
-    uint8_t model[41];     // Model in string
+    uint8_t reserved;               // 0 (Empty) or 0x1 (This Drive is Present)
+    uint8_t channel;                // 0 (Primary Channel) or 1 (Secondary Channel)
+    uint8_t drive;                  // 0 (Master Drive) or 1 (Slave Drive)
+    uint16_t type;                  // 0: ATA, 1:ATAPI
+    uint16_t signature;             // Drive Signature
+    uint16_t features;              // Features
+    uint32_t command_sets;          // Command Sets Supported
+    uint32_t size;                  // Size in Sectors
+    uint8_t model[41];              // Model in string
 } ata_dev_t;
 
 typedef enum {
@@ -182,9 +182,9 @@ void ata_dump_stat_reg(ata_channel_t channel);
 /**
  * Dumps the information of the specified ATA device.
  *
- * @param dev The ATA device structure containing device information.
+ * @param index used to get one of four devices in global devices array
  */
-void ata_dump_drv_info(ata_dev_t *dev);
+void ata_dump_drv_info(uint8_t index);
 
 /**
  * Calculates the address of a register in the specified ATA channel.

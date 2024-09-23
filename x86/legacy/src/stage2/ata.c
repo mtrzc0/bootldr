@@ -40,6 +40,7 @@ void ata_init(void) {
 
 void ata_read_sectors(uint16_t count) {
     // TODO
+    (void) count;
 }
 
 bool ata_read_sector(ata_channel_t channel, uint32_t LBA28, uint32_t *buff) {
@@ -209,7 +210,7 @@ void ata_detect_devices(void) {
             }
 
             // dump the device information
-            ata_dump_drv_info(&ata_devs[dev_count]);
+            ata_dump_drv_info(dev_count);
             dev_count++;
         }
     }
@@ -267,15 +268,15 @@ void ata_dump_stat_reg(ata_channel_t channel) {
     }
 }
 
-void ata_dump_drv_info(ata_dev_t *dev) {
-    log_info(strfs("ATA driver: Device type: %s", dev->type ? "ATAPI" : "PATA"));
-    log_info(strfs("ATA driver: Drive type: %s", dev->drive ? "Slave" : "Master"));
-    log_info(strfs("ATA driver: Channel: %s", dev->channel ? "Secondary" : "Primary"));
-    log_info(strfn("ATA driver: Signature: %d", dev->signature));
-    log_info(strfs("ATA driver: Features: %s", dev->features != 0 ? "Available" : "Not known"));
-    log_info(strfn("ATA driver: Command sets: %d", dev->command_sets));
-    log_info(strfn("ATA driver: Device size in bytes: %d", dev->size*512));
-    log_info(strfs("ATA driver: Model: %s", (const char *)dev->model));
+void ata_dump_drv_info(uint8_t index) {
+    log_info(strfs("ATA driver: Device type: %s", ata_devs[index].type ? "ATAPI" : "PATA"));
+    log_info(strfs("ATA driver: Drive type: %s", ata_devs[index].drive ? "Slave" : "Master"));
+    log_info(strfs("ATA driver: Channel: %s", ata_devs[index].channel ? "Secondary" : "Primary"));
+    log_info(strfn("ATA driver: Signature: %d", ata_devs[index].signature));
+    log_info(strfs("ATA driver: Features: %s", ata_devs[index].features != 0 ? "Available" : "Not known"));
+    log_info(strfn("ATA driver: Command sets: %d", ata_devs[index].command_sets));
+    log_info(strfn("ATA driver: Device size in bytes: %d", ata_devs[index].size*512));
+    log_info(strfs("ATA driver: Model: %s", (const char *)ata_devs[index].model));
 }
 
 void ata_srst(ata_channel_t channel) {
