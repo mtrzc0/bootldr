@@ -55,7 +55,7 @@ void vga_scroll(void) {
     vga_crs_update();
 }
 
-void putcb(char chr, char style) {
+void vga_putc(char chr, char style) {
     wchar_t *vga_buffer = _vga_addr + vga_i();
 
     if (chr == '\n') {
@@ -72,64 +72,3 @@ void putcb(char chr, char style) {
     vga_crs_update();
 }
 
-void printb(const char *str) {
-    for(size_t i = 0; str[i] != '\0'; i++) {
-        putcb(str[i], VGA_STYLE_TEXT);
-    }
-}
-
-void log_ok(const char *str) {
-    vga_scroll();
-    const char *msg = "[ OK ] ";
-    putcb(msg[0], VGA_STYLE_BRACKET);
-    putcb(msg[1], VGA_STYLE_TEXT);
-    putcb(msg[2], VGA_STYLE_LOG_OK);
-    putcb(msg[3], VGA_STYLE_LOG_OK);
-    putcb(msg[4], VGA_STYLE_TEXT);
-    putcb(msg[5], VGA_STYLE_BRACKET);
-    putcb(msg[6], VGA_STYLE_TEXT);
-    printb(str);
-    putcb('\n', VGA_STYLE_TEXT);
-}
-
-void log_fail(const char *str) {
-    vga_scroll();
-    const char *msg = "[FAIL] ";
-    putcb(msg[0], VGA_STYLE_BRACKET);
-    putcb(msg[1], VGA_STYLE_LOG_FAIL);
-    putcb(msg[2], VGA_STYLE_LOG_FAIL);
-    putcb(msg[3], VGA_STYLE_LOG_FAIL);
-    putcb(msg[4], VGA_STYLE_LOG_FAIL);
-    putcb(msg[5], VGA_STYLE_BRACKET);
-    putcb(msg[6], VGA_STYLE_TEXT);
-    printb(str);
-    putcb('\n', VGA_STYLE_TEXT);
-}
-
-void log_info(const char *str) {
-    vga_scroll();
-    const char *msg = "[INFO] ";
-    putcb(msg[0], VGA_STYLE_BRACKET);
-    putcb(msg[1], VGA_STYLE_LOG_INFO);
-    putcb(msg[2], VGA_STYLE_LOG_INFO);
-    putcb(msg[3], VGA_STYLE_LOG_INFO);
-    putcb(msg[4], VGA_STYLE_LOG_INFO);
-    putcb(msg[5], VGA_STYLE_BRACKET);
-    putcb(msg[6], VGA_STYLE_TEXT);
-    printb(str);
-    putcb('\n', VGA_STYLE_TEXT);
-}
-
-void log_warn(const char *str) {
-    vga_scroll();
-    const char *msg = "[WARN] ";
-    putcb(msg[0], VGA_STYLE_BRACKET);
-    putcb(msg[1], VGA_STYLE_LOG_WARN);
-    putcb(msg[2], VGA_STYLE_LOG_WARN);
-    putcb(msg[3], VGA_STYLE_LOG_WARN);
-    putcb(msg[4], VGA_STYLE_LOG_WARN);
-    putcb(msg[5], VGA_STYLE_BRACKET);
-    putcb(msg[6], VGA_STYLE_TEXT);
-    printb(str);
-    putcb('\n', VGA_STYLE_TEXT);
-}

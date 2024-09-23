@@ -1,4 +1,5 @@
 #include "sys.h"
+#include "vga.h"
 
 uint16_t numlen(uint32_t num) {
     uint16_t len = 0;
@@ -117,4 +118,66 @@ void *memsetw(wchar_t *dest, wchar_t ch, size_t count) {
         dest[i] = ch;
     }
     return dest;
+}
+
+void printb(const char *str) {
+    for(size_t i = 0; str[i] != '\0'; i++) {
+        vga_putc(str[i], VGA_STYLE_TEXT);
+    }
+}
+
+void log_ok(const char *str) {
+    vga_scroll();
+    const char *msg = "[ OK ] ";
+    vga_putc(msg[0], VGA_STYLE_BRACKET);
+    vga_putc(msg[1], VGA_STYLE_TEXT);
+    vga_putc(msg[2], VGA_STYLE_LOG_OK);
+    vga_putc(msg[3], VGA_STYLE_LOG_OK);
+    vga_putc(msg[4], VGA_STYLE_TEXT);
+    vga_putc(msg[5], VGA_STYLE_BRACKET);
+    vga_putc(msg[6], VGA_STYLE_TEXT);
+    printb(str);
+    vga_putc('\n', VGA_STYLE_TEXT);
+}
+
+void log_fail(const char *str) {
+    vga_scroll();
+    const char *msg = "[FAIL] ";
+    vga_putc(msg[0], VGA_STYLE_BRACKET);
+    vga_putc(msg[1], VGA_STYLE_LOG_FAIL);
+    vga_putc(msg[2], VGA_STYLE_LOG_FAIL);
+    vga_putc(msg[3], VGA_STYLE_LOG_FAIL);
+    vga_putc(msg[4], VGA_STYLE_LOG_FAIL);
+    vga_putc(msg[5], VGA_STYLE_BRACKET);
+    vga_putc(msg[6], VGA_STYLE_TEXT);
+    printb(str);
+    vga_putc('\n', VGA_STYLE_TEXT);
+}
+
+void log_info(const char *str) {
+    vga_scroll();
+    const char *msg = "[INFO] ";
+    vga_putc(msg[0], VGA_STYLE_BRACKET);
+    vga_putc(msg[1], VGA_STYLE_LOG_INFO);
+    vga_putc(msg[2], VGA_STYLE_LOG_INFO);
+    vga_putc(msg[3], VGA_STYLE_LOG_INFO);
+    vga_putc(msg[4], VGA_STYLE_LOG_INFO);
+    vga_putc(msg[5], VGA_STYLE_BRACKET);
+    vga_putc(msg[6], VGA_STYLE_TEXT);
+    printb(str);
+    vga_putc('\n', VGA_STYLE_TEXT);
+}
+
+void log_warn(const char *str) {
+    vga_scroll();
+    const char *msg = "[WARN] ";
+    vga_putc(msg[0], VGA_STYLE_BRACKET);
+    vga_putc(msg[1], VGA_STYLE_LOG_WARN);
+    vga_putc(msg[2], VGA_STYLE_LOG_WARN);
+    vga_putc(msg[3], VGA_STYLE_LOG_WARN);
+    vga_putc(msg[4], VGA_STYLE_LOG_WARN);
+    vga_putc(msg[5], VGA_STYLE_BRACKET);
+    vga_putc(msg[6], VGA_STYLE_TEXT);
+    printb(str);
+    vga_putc('\n', VGA_STYLE_TEXT);
 }

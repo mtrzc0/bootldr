@@ -2,7 +2,6 @@
 
 #include "ata.h"
 #include "sys.h"
-#include "vga.h"
 
 // globals
 static ata_channels_regs_t ata_bus[ATA_BUS_MAX] = { 0 };

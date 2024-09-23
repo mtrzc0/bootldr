@@ -115,57 +115,14 @@ void vga_cls(void);
  * @param chr The character to output.
  * @param style The style to apply to the character.
  */
-void putcb(char chr, char style);
+void vga_putc(char chr, char style);
 
 /**
- * Outputs a formatted string to the VGA text buffer.
+ * Scrolls the VGA text buffer.
  *
- * This function takes a null-terminated string and outputs it to the VGA text buffer,
- * starting at the current cursor position. The string can contain format specifiers
- * which will be replaced by the corresponding arguments.
- *
- * @param str The null-terminated string to output.
+ * This function scrolls the contents of the VGA text buffer up by one line,
+ * making room for new text at the bottom of the screen.
  */
-void printb(const char *str);
+void vga_scroll(void);
 
-
-/**
- * Logs a failure message to the VGA text buffer.
- *
- * This function takes a null-terminated string and outputs it to the VGA text buffer
- * with a style indicating a failure message.
- *
- * @param str The null-terminated string to output.
- */
-void log_fail(const char *str);
-
-/**
- * Logs a success message to the VGA text buffer.
- *
- * This function takes a null-terminated string and outputs it to the VGA text buffer
- * with a style indicating a success message.
- *
- * @param str The null-terminated string to output.
- */
-void log_ok(const char *str);
-
-/**
- * @brief Logs an informational message to the VGA text buffer.
- *
- * This function takes a null-terminated string and outputs it to the VGA text buffer
- * with a style indicating an informational message.
- *
- * @param str The null-terminated string to output.
- */
-void log_info(const char *str);
-
-/**
- * Logs a warning message to the VGA text buffer.
- *
- * This function takes a null-terminated string and outputs it to the VGA text buffer
- * with a style indicating a warning message.
- *
- * @param str The null-terminated string to output.
- */
-void log_warn(const char *str);
 #endif //VGA_H

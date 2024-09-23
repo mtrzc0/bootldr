@@ -95,6 +95,16 @@ void *memsetw(wchar_t *dest, wchar_t ch, size_t count);
  */
 void memcpy(void *dest, const void *src, size_t count);
 
+/**
+ * @brief Copies `count` wide characters from the memory area `src` to the memory area `dest`.
+ *
+ * This function performs a wide character-by-wide character copy from the source to the destination.
+ * The memory areas must not overlap.
+ *
+ * @param dest A pointer to the destination memory area.
+ * @param src A pointer to the source memory area.
+ * @param count The number of wide characters to copy.
+ */
 void memcpyw(wchar_t *dest, wchar_t *src, size_t count);
 
 /**
@@ -131,5 +141,57 @@ char *strfn(const char *str, uint32_t num);
  * @return A pointer to the concatenated string.
  */
 char *strfs(const char *str1, const char *str2);
+
+/**
+ * Outputs a formatted string to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer,
+ * starting at the current cursor position. The string can contain format specifiers
+ * which will be replaced by the corresponding arguments.
+ *
+ * @param str The null-terminated string to output.
+ */
+void printb(const char *str);
+
+
+/**
+ * Logs a failure message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating a failure message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_fail(const char *str);
+
+/**
+ * Logs a success message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating a success message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_ok(const char *str);
+
+/**
+ * @brief Logs an informational message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating an informational message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_info(const char *str);
+
+/**
+ * Logs a warning message to the VGA text buffer.
+ *
+ * This function takes a null-terminated string and outputs it to the VGA text buffer
+ * with a style indicating a warning message.
+ *
+ * @param str The null-terminated string to output.
+ */
+void log_warn(const char *str);
 
 #endif //SYS_H
