@@ -54,7 +54,7 @@ char *strfs(const char *str1, const char  *str2) {
     return _strtemp;
 }
 
-char *strfn(const char *str, uint32_t num) {
+char *strfd(const char *str, uint32_t num) {
     const size_t strl = strlen(str);
     const size_t numl = numlen(num);
     char digits[numl];
@@ -131,7 +131,6 @@ void printb(const char *str) {
 }
 
 void log_ok(const char *str) {
-    vga_scroll();
     const char *msg = "[ OK ] ";
     vga_putc(msg[0], VGA_STYLE_BRACKET);
     vga_putc(msg[1], VGA_STYLE_TEXT);
@@ -145,7 +144,6 @@ void log_ok(const char *str) {
 }
 
 void log_fail(const char *str) {
-    vga_scroll();
     const char *msg = "[FAIL] ";
     vga_putc(msg[0], VGA_STYLE_BRACKET);
     vga_putc(msg[1], VGA_STYLE_LOG_FAIL);
@@ -159,7 +157,6 @@ void log_fail(const char *str) {
 }
 
 void log_info(const char *str) {
-    vga_scroll();
     const char *msg = "[INFO] ";
     vga_putc(msg[0], VGA_STYLE_BRACKET);
     vga_putc(msg[1], VGA_STYLE_LOG_INFO);
@@ -173,7 +170,6 @@ void log_info(const char *str) {
 }
 
 void log_warn(const char *str) {
-    vga_scroll();
     const char *msg = "[WARN] ";
     vga_putc(msg[0], VGA_STYLE_BRACKET);
     vga_putc(msg[1], VGA_STYLE_LOG_WARN);
@@ -183,5 +179,19 @@ void log_warn(const char *str) {
     vga_putc(msg[5], VGA_STYLE_BRACKET);
     vga_putc(msg[6], VGA_STYLE_TEXT);
     printb(str);
+    vga_putc('\n', VGA_STYLE_TEXT);
+}
+
+void dump_hex(uint8_t *data, size_t count) {
+    // TODO: print address in hex
+    log_info(strfd("Dumping data at address: %d", (uint32_t)data));
+    for (size_t i = 0; i < count; i++) {
+        if (i % 16 == 0 && i != 0) {
+            vga_putc('\n', VGA_STYLE_TEXT);
+        }
+        vga_putc("0123456789ABCDEF"[data[i] >> 4], VGA_STYLE_TEXT);
+        vga_putc("0123456789ABCDEF"[data[i] & 0x0F], VGA_STYLE_TEXT);
+        vga_putc(' ', VGA_STYLE_TEXT);
+    }
     vga_putc('\n', VGA_STYLE_TEXT);
 }

@@ -126,7 +126,7 @@ size_t strlen(const char *str);
  * @param num The number to insert into the format string.
  * @return A pointer to the formatted string.
  */
-char *strfn(const char *str, uint32_t num);
+char *strfd(const char *str, uint32_t num);
 
 /**
  * @brief Concatenates two strings.
@@ -191,5 +191,16 @@ void log_info(const char *str);
  * @param str The null-terminated string to output.
  */
 void log_warn(const char *str);
+
+/**
+ * @brief Dumps the hexadecimal representation of a byte array.
+ *
+ * This function takes a pointer to an array of bytes and its length,
+ * and prints the hexadecimal representation of each byte to the VGA text buffer.
+ *
+ * @param data A pointer to the array of bytes.
+ * @param count The number of bytes in the array.
+ */
+void dump_hex(uint8_t *data, size_t count);;
 
 #endif //SYS_H

@@ -46,10 +46,11 @@ void ata_disk_read(uint16_t count) {
     // otherwise all data from the LBA 0x80 will be 0x00
     log_info("ATA driver: Reading disk sectors");
     for (uint16_t i = 0; i < count; i++) {
-        log_info(strfn("ATA driver: Reading sector: %d", ATA_BASE_LBA + i));
+        log_info(strfd("ATA driver: Reading sector: %d", ATA_BASE_LBA + i));
         ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA + i, ata_sect_buf);
     }
     log_ok("ATA driver: Disk read complete");
+    dump_hex(ata_sect_buf, ATA_SECT_SIZE/2);
 }
 
 void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf) {
@@ -67,9 +68,6 @@ void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf) {
         if (buf != NULL) {
             buf[i + 1] = data & 0xFF;
             buf[i] = data >> 8;
-            if (data != 0) {
-                log_info(strfn("ATA driver: Data: %d", buf[i]));
-            }
         }
     }
     ata_drive_poll(channel);
@@ -117,7 +115,7 @@ void ata_check_float_bus(void) {
     }
 
     // tell how many POSSIBLE disk devices were detected
-    log_info(strfn("ATA driver: Number of reserved bus channels: %d", channel_count));
+    log_info(strfd("ATA driver: Number of reserved bus channels: %d", channel_count));
 }
 
 void ata_detect_devices(void) {
@@ -299,10 +297,10 @@ void ata_dump_drv_info(uint8_t index) {
     log_info(strfs("ATA driver: Device type: %s", ata_devs[index].type ? "ATAPI" : "PATA"));
     log_info(strfs("ATA driver: Drive type: %s", ata_devs[index].drive ? "Slave" : "Master"));
     log_info(strfs("ATA driver: Channel: %s", ata_devs[index].channel ? "Secondary" : "Primary"));
-    log_info(strfn("ATA driver: Signature: %d", ata_devs[index].signature));
+    log_info(strfd("ATA driver: Signature: %d", ata_devs[index].signature));
     log_info(strfs("ATA driver: Features: %s", ata_devs[index].features != 0 ? "Available" : "Not known"));
-    log_info(strfn("ATA driver: Command sets: %d", ata_devs[index].command_sets));
-    log_info(strfn("ATA driver: Device size in bytes: %d", ata_devs[index].size*512));
+    log_info(strfd("ATA driver: Command sets: %d", ata_devs[index].command_sets));
+    log_info(strfd("ATA driver: Device size in bytes: %d", ata_devs[index].size*512));
     log_info(strfs("ATA driver: Model: %s", (const char *)ata_devs[index].model));
 }
 

@@ -56,6 +56,7 @@ void vga_scroll(void) {
 }
 
 void vga_putc(char chr, char style) {
+    vga_scroll();
     wchar_t *vga_buffer = _vga_addr + vga_i();
 
     if (chr == '\n') {
@@ -68,7 +69,6 @@ void vga_putc(char chr, char style) {
         *vga_buffer = chr | (style << 8);
         _vga_crs.x++;
     }
-
     vga_crs_update();
 }
 
