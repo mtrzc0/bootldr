@@ -1,9 +1,7 @@
 #ifndef SYS_H
 #define SYS_H
 
-// global for functions that return stack allocated strings
-// used single threaded environment without heap
-static char *_strtemp;
+#define NULL ((void *)0)
 
 typedef unsigned int size_t;
 typedef unsigned char uchar_t;

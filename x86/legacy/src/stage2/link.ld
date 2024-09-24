@@ -20,4 +20,6 @@ SECTIONS {
         *(.bss)
         *(COMMON)
     }
+
+    . = 0x17C00;
 }

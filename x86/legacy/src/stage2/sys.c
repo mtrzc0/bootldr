@@ -1,6 +1,10 @@
 #include "sys.h"
 #include "vga.h"
 
+// global for functions that return stack allocated strings
+// used single threaded environment without heap
+static char *_strtemp;
+
 uint16_t numlen(uint32_t num) {
     uint16_t len = 0;
     if (num == 0) {

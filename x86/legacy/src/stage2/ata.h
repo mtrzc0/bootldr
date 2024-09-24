@@ -12,6 +12,8 @@
 #define ATA_IDENT_BUF_MAX 512
 #define ATA_BUS_MAX 2
 
+#define ATA_SECT_SIZE 512
+
 // defines for BARs when PCI channel is in compatibility mode
 // otherwise, we detect the BARs from the PCI configuration space
 #define ATA_COMPAT_BAR0 0x1F0
@@ -240,7 +242,7 @@ void ata_srst(ata_channel_t channel);
  * @param channel The ATA channel (Primary or Secondary).
  * @param ns The delay time in nanoseconds.
  */
-void ata_delay(ata_channel_t channel, uint16_t ns);
+void ata_delay(ata_channel_t channel, uint32_t ns);
 
 /**
  * Polls the specified ATA channel until it is ready.
@@ -250,8 +252,8 @@ void ata_delay(ata_channel_t channel, uint16_t ns);
  */
 int8_t ata_drive_poll(ata_channel_t channel);;
 
-bool ata_read_sector(ata_channel_t channel, uint32_t LBA48, uint32_t *buff);
+void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf);
 
-void ata_read_sectors(uint16_t count);
+void ata_disk_read(uint16_t count);
 
 #endif //ATA_H

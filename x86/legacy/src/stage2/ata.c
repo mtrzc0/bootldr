@@ -16,9 +16,7 @@ static uint8_t ata_ident_buf[ATA_IDENT_BUF_MAX] = { 0 };
 
 // buffer for first sector read from disk
 // static uint32_t *ata_io_base_sect = (uint32_t *) 0xFFE00;
-
-// LBA of first disk sector NOT read via BIOS call
-// const static uint32_t ata_io_base_LBA = 0x10;
+static uint8_t ata_sect_buf[ATA_SECT_SIZE] = { 0 };
 
 void ata_init(void) {
     // detect pio ports
@@ -37,14 +35,44 @@ void ata_init(void) {
     log_ok("ATA driver: Init");
 }
 
-void ata_read_sectors(uint16_t count) {
-    // TODO
-    (void) count;
+void ata_disk_read(uint16_t count) {
+    // LBA of first disk sector NOT read via BIOS call
+    const uint8_t ATA_BASE_LBA = 0x80;
+
+    // FIXME: first read sector at LBA 0x7F (127)
+    ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA-1, NULL);
+
+    // then begin reading the disk sectors starting from LBA 0x80
+    // otherwise all data from the LBA 0x80 will be 0x00
+    log_info("ATA driver: Reading disk sectors");
+    for (uint16_t i = 0; i < count; i++) {
+        log_info(strfn("ATA driver: Reading sector: %d", ATA_BASE_LBA + i));
+        ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA + i, ata_sect_buf);
+    }
+    log_ok("ATA driver: Disk read complete");
 }
 
-bool ata_read_sector(ata_channel_t channel, uint32_t LBA28, uint32_t *buff) {
-    // TODO
-    return false;
+void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf) {
+    ata_drive_poll(channel);
+    ata_write_reg(ATA_IO, channel, ATA_REG_HD_DEV_SEL, 0xE0 | (LBA >> 24) & 0x0F);
+    ata_write_reg(ATA_IO, channel, ATA_REG_ERR_FEATS, 0x00);
+    ata_write_reg(ATA_IO, channel, ATA_REG_SECT_COUNT0, 1);
+    ata_write_reg(ATA_IO, channel, ATA_REG_LBA0, LBA & 0xFF);
+    ata_write_reg(ATA_IO, channel, ATA_REG_LBA1, (LBA >> 8) & 0xFF);
+    ata_write_reg(ATA_IO, channel, ATA_REG_LBA2, (LBA >> 16) & 0xFF);
+    ata_write_reg(ATA_IO, channel, ATA_REG_CMD_STAT, ATA_CMD_READ);
+    ata_drive_poll(channel);
+    for (uint16_t i = 0; i < 256; i+=2) {
+        uint16_t data = ata_read_reg(ATA_IO, channel, ATA_REG_DATA);
+        if (buf != NULL) {
+            buf[i + 1] = data & 0xFF;
+            buf[i] = data >> 8;
+            if (data != 0) {
+                log_info(strfn("ATA driver: Data: %d", buf[i]));
+            }
+        }
+    }
+    ata_drive_poll(channel);
 }
 
 void ata_detect_ports(const uint32_t BAR0, const uint32_t BAR1, const uint32_t BAR2, const uint32_t BAR3, const uint32_t BAR4) {
@@ -295,7 +323,7 @@ uint16_t ata_addr(ata_channel_base_t channel_base, ata_channel_t channel, uint32
 }
 
 // TODO: add support for Interrupts and do optimization
-void ata_delay(ata_channel_t channel, uint16_t ns) {
+void ata_delay(ata_channel_t channel, uint32_t ns) {
     if (ns < 100) {
         return;
     }

@@ -76,8 +76,6 @@ $(TARGET_IMG): $(TARGET_BIN)
 # mkfs.fat -F 16 -n "os" $(TARGET_IMG)
 # Write final binary to image
 	@dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 conv=notrunc
-	@echo "ABCDEF" > disktest
-	@dd if=disktest of=$(TARGET_IMG) bs=512 seek=16 conv=notrunc
 # Copy image to target directory
 	@cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
 
