@@ -129,6 +129,18 @@ size_t strlen(const char *str);
 char *strfd(const char *str, uint32_t num);
 
 /**
+ * @brief Formats a string with a hexadecimal number.
+ *
+ * This function takes a format string and a number, and returns a new string
+ * where the number is inserted into the format string in hexadecimal format.
+ *
+ * @param str The format string.
+ * @param num The number to insert into the format string in hexadecimal format.
+ * @return A pointer to the formatted string.
+ */
+char *strfX(const char *str, uint32_t num);
+
+/**
  * @brief Concatenates two strings.
  *
  * This function takes two strings and returns a new string

@@ -33,30 +33,26 @@ char *strfs(const char *str1, const char  *str2) {
     char res[resl];
 
     // format string
-    for(size_t i = 0; str1[i] != '\0'; i++) {
-        switch (str1[i]) {
-            case '%':
-                if (str1[i+1] == 's') {
-                    for (size_t j = 0; j < str2l; j++) {
-                        res[i+j] = str2[j];
-                    }
-                    i++;
-                }
-                break;
-            default:
-                // copy char to result string
-                res[i] = str1[i];
-                break;
+    for(size_t i = 0; i < resl; i++) {
+        if (str1[i] == '%' && str1[i+1] == 's') {
+            for (size_t j = 0; j < str2l; j++) {
+                res[i+j] = str2[j];
+            }
+            i+=str2l;
+        } else {
+            // copy char to result string
+            res[i] = str1[i];
         }
     }
+
+    res[resl-1] = '\0';
     memcpy(_strtemp, res, resl);
-    _strtemp[resl-1] = '\0';
     return _strtemp;
 }
 
-char *strfd(const char *str, uint32_t num) {
+char *strfd(const char *str, uint32_t dec) {
     const size_t strl = strlen(str);
-    const size_t numl = numlen(num);
+    const size_t numl = numlen(dec);
     char digits[numl];
     const size_t resl = strl + numl - 2;
     char res[resl];
@@ -64,30 +60,62 @@ char *strfd(const char *str, uint32_t num) {
     // convert number to string
     if (numl > 0) {
         for (size_t i = 0; i < numl; i++) {
-            digits[i] = num % 10 + '0';
-            num /= 10;
+            digits[i] = dec % 10 + '0';
+            dec /= 10;
         }
     }
 
     // format string
-    for(size_t i = 0; str[i] != '\0'; i++) {
-        switch (str[i]) {
-            case '%':
-                if (str[i+1] == 'd') {
-                    for (size_t j = 0; j < numl; j++) {
-                        res[i+j] = digits[numl-1-j];
-                    }
-                    i++;
-                }
-                break;
-            default:
-                // copy char to result string
-                res[i] = str[i];
-                break;
+    for(size_t i = 0; i < resl; i++) {
+        if (str[i] == '%' && str[i+1] == 'd') {
+            for (size_t j = 0; j < numl; j++) {
+                res[i+j] = digits[numl-1-j];
+            }
+            i+=numl;
+        } else {
+            // copy char to result string
+            res[i] = str[i];
         }
     }
+    res[resl-1] = '\0';
     memcpy(_strtemp, res, resl);
-    _strtemp[resl-1] = '\0';
+    return _strtemp;
+}
+
+char *strfX(const char *str, uint32_t hex) {
+    const size_t strl = strlen(str);
+    const size_t numl = 8;
+    char digits[numl];
+    const size_t resl = strl + numl;
+    char res[resl];
+
+    // convert number to hex string
+    if (numl > 0) {
+        for (size_t i = 0; i < numl; i+=2) {
+            const uint8_t temp = hex >> 4 * i;
+            digits[i] = "0123456789ABCDEF"[temp >> 4];
+            digits[i+1] = "0123456789ABCDEF"[temp & 0x0F];
+        }
+    }
+
+    // format string
+    for(size_t i = 0; i < resl; i++) {
+        if (str[i] == '%' && str[i+1] == 'X') {
+            res[i] = '0';
+            res[i+1] = 'x';
+            i+=2;
+            for (size_t j = 0; j < numl; j++) {
+                res[i+j] = digits[numl-1-j];
+            }
+            i+=numl;
+        }
+        else {
+            // copy char to result string
+            res[i] = str[i];
+        }
+    }
+    res[resl-1] = '\0';
+    memcpy(_strtemp, res, resl);
     return _strtemp;
 }
 
@@ -184,7 +212,7 @@ void log_warn(const char *str) {
 
 void dump_hex(uint8_t *data, size_t count) {
     // TODO: print address in hex
-    log_info(strfd("Dumping data at address: %d", (uint32_t)data));
+    log_info(strfX("Dumping data at address: %X", (uint32_t)data));
     for (size_t i = 0; i < count; i++) {
         if (i % 16 == 0 && i != 0) {
             vga_putc('\n', VGA_STYLE_TEXT);

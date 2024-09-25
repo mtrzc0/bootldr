@@ -297,9 +297,9 @@ void ata_dump_drv_info(uint8_t index) {
     log_info(strfs("ATA driver: Device type: %s", ata_devs[index].type ? "ATAPI" : "PATA"));
     log_info(strfs("ATA driver: Drive type: %s", ata_devs[index].drive ? "Slave" : "Master"));
     log_info(strfs("ATA driver: Channel: %s", ata_devs[index].channel ? "Secondary" : "Primary"));
-    log_info(strfd("ATA driver: Signature: %d", ata_devs[index].signature));
+    log_info(strfX("ATA driver: Signature: %X", ata_devs[index].signature));
     log_info(strfs("ATA driver: Features: %s", ata_devs[index].features != 0 ? "Available" : "Not known"));
-    log_info(strfd("ATA driver: Command sets: %d", ata_devs[index].command_sets));
+    log_info(strfX("ATA driver: Command sets: %X", ata_devs[index].command_sets));
     log_info(strfd("ATA driver: Device size in bytes: %d", ata_devs[index].size*512));
     log_info(strfs("ATA driver: Model: %s", (const char *)ata_devs[index].model));
 }
