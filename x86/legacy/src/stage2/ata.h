@@ -251,9 +251,24 @@ void ata_delay(ata_channel_t channel, uint32_t ns);
  * @return 0 if successful, -1 if an error occurred.
  */
 int8_t ata_drive_poll(ata_channel_t channel);
-
+/**
+ * @brief Reads a sector from the specified ATA channel.
+ *
+ * This function reads a sector from the specified ATA channel and stores the data in the provided buffer.
+ *
+ * @param channel The ATA channel (Primary or Secondary).
+ * @param LBA The logical block address of the sector to read.
+ * @param buf A pointer to the buffer where the read data will be stored.
+ */
 void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf);
 
+/**
+ * @brief Reads data from the disk.
+ *
+ * This function reads a specified number of sectors from the disk.
+ *
+ * @param count The number of sectors to read.
+ */
 void ata_disk_read(uint16_t count);
 
 #endif //ATA_H

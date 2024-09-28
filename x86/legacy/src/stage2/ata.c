@@ -59,7 +59,6 @@ void ata_disk_read(uint16_t count) {
             ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA + i, ATA_SECT_BASE + i);
         }
 
-        dump_hex(ATA_SECT_BASE, ATA_SECT_SIZE/2);
         log_ok("ATA driver: Disk read complete");
     }
 }
