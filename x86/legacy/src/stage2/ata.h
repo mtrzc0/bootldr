@@ -266,9 +266,7 @@ void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf);
  * @brief Reads data from the disk.
  *
  * This function reads a specified number of sectors from the disk.
- *
- * @param count The number of sectors to read.
  */
-void ata_disk_read(uint16_t count);
+void ata_disk_read(void);
 
 #endif //ATA_H
