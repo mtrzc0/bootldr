@@ -223,3 +223,8 @@ void dump_hex(uint8_t *data, size_t count) {
     }
     vga_putc('\n', VGA_STYLE_TEXT);
 }
+
+void exec_kernel(void *kernel_start) {
+    log_info("Loading kernel...");
+    multiboot_entry(kernel_start);
+}

@@ -215,4 +215,8 @@ void log_warn(const char *str);
  */
 void dump_hex(uint8_t *data, size_t count);;
 
+void multiboot_entry(void *kernel_start);
+
+void exec_kernel(void *kernel_start);
+
 #endif //SYS_H

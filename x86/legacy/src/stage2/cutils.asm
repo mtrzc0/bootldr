@@ -7,7 +7,43 @@ global inw              ; make the label inw visible outside this file
 global outdw            ; make the label outdw visible outside this file
 global rep_insw         ; make the label rep_insw visible outside this file
 global indw             ; make the label indw visible outside this file
-global load_seg         ; make the label load_seg visible outside this file
+global multiboot_entry  ; make the label load_kernel visible outside this file
+
+
+;==============================================================================
+; multiboot header
+;==============================================================================
+%define MULTIBOOT_MAGIC     0x1BADB002
+%define MULTIBOOT_FLAGS     0x00000000
+
+multiboot_h:
+.magic:         dd MULTIBOOT_MAGIC
+.flags:         dd MULTIBOOT_FLAGS
+.checksum:      dd -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
+.header_addr:   dd multiboot_h
+.load_addr:     dd $
+.load_end_addr: dd 0x0000
+.bss_end_addr:  dd 0x0000
+.entry_addr:    dd 0x100000 ; default kernel entry point (HMA)
+
+;==============================================================================
+; functions
+;==============================================================================
+
+; multiboot_entry - load the kernel
+; stack: [esp + 4] kernel entry address
+;        [esp    ] return address
+multiboot_entry:
+    mov eax, [esp + 4]                  ; get the kernel entry address
+    mov [multiboot_h.entry_addr], eax   ; save the kernel entry address
+    ;TODO: stack pointer init
+    ;TODO: reset eflags
+    mov ebx, [multiboot_h]              ; get the address of the multiboot header
+    mov eax, [multiboot_h.magic]        ; get the magic number
+    push ebx                            ; save the address of the multiboot header
+    push eax                            ; save the magic number
+    jmp [multiboot_h.entry_addr]        ; jump to the kernel entry point
+    ret
 
 ; outb - send a byte to an I/O port
 ; stack: [esp + 8] the data byte

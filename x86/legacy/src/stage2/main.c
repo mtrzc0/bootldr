@@ -5,5 +5,6 @@ int bmain(void) {
     vga_init();
     ata_init();
     ata_disk_read(2880);
+    exec_kernel((void *)0x100000);
     return 0;
 }
