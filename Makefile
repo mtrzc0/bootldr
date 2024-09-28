@@ -76,8 +76,10 @@ $(TARGET_IMG): $(TARGET_BIN)
 # mkfs.fat -F 16 -n "os" $(TARGET_IMG)
 # Write final binary to image
 	@dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 conv=notrunc
+# Create target directory
+	@mkdir -p $(TARGET_DIR)
 # Copy image to target directory
-	@cp $(TARGET_IMG) $(TARGET_DIR)/$(TARGET).img
+	@cp $(TARGET_IMG) $(TARGET_DIR)/os.img
 
 # Rule to produce .bin file
 $(TARGET_BIN): $(STAGE1_ASM_O) $(STAGE2_C_O) $(STAGE2_ASM_O)
