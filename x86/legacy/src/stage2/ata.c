@@ -38,27 +38,25 @@ void ata_init(void) {
     log_ok("ATA driver: Init");
 }
 
-void ata_disk_read(uint16_t count) {
+void ata_disk_read(void) {
     for (uint8_t dev = 0; dev < ATA_DEVS_MAX; dev++) {
-        // LBA of first disk sector NOT read via BIOS call
-        const uint8_t ATA_BASE_LBA = 0x80;
         if (!ata_devs[dev].reserved) {
             continue;
         }
-        if (ata_devs[dev].size < count || count == 0) {
-            log_fail("ATA driver: Disk too small or invalid sector count");
-            return;
-        }
+        // get disk size
+        const uint16_t count = ata_devs[dev].size;
+        // LBA of first disk sector NOT read via BIOS call
+        const uint8_t ATA_LBA_BASE = 0x80;
+
         log_info(strfd("ATA driver: Reading disk sectors from device: %d", dev));
         // FIXME: first read sector at LBA 0x7F (127)
-        ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA-1, NULL);
+        ata_read_sector(ATA_PRIMARY, ATA_LBA_BASE-1, NULL);
 
         // then begin reading the disk sectors starting from LBA 0x80
         // otherwise all data from the LBA 0x80 will be 0x00
-        for (uint16_t i = 0; i < count; i++) {
-            ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA + i, ATA_SECT_BASE + i);
+        for (uint32_t i = 0; i < count*512; i+=512) {
+            ata_read_sector(ATA_PRIMARY, ATA_LBA_BASE + i, ATA_SECT_BASE + i);
         }
-
         log_ok("ATA driver: Disk read complete");
     }
 }

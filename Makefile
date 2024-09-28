@@ -74,8 +74,10 @@ $(TARGET_IMG): $(TARGET_BIN)
 	@dd if=/dev/zero of=$(TARGET_IMG) bs=512 count=2880
 # TODO: Make fs
 # mkfs.fat -F 16 -n "os" $(TARGET_IMG)
-# Write final binary to image
+# Write bootloader to disk image
 	@dd if=$(TARGET_BIN) of=$(TARGET_IMG) bs=512 conv=notrunc
+# Write kernel to disk image
+# TODO: Make kernel
 # Create target directory
 	@mkdir -p $(TARGET_DIR)
 # Copy image to target directory
