@@ -6,6 +6,8 @@ global outw             ; make the label outw visible outside this file
 global inw              ; make the label inw visible outside this file
 global outdw            ; make the label outdw visible outside this file
 global rep_insw         ; make the label rep_insw visible outside this file
+global indw             ; make the label indw visible outside this file
+global load_seg         ; make the label load_seg visible outside this file
 
 ; outb - send a byte to an I/O port
 ; stack: [esp + 8] the data byte

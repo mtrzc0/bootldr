@@ -4,6 +4,6 @@
 int bmain(void) {
     vga_init();
     ata_init();
-    ata_disk_read(1);
+    ata_disk_read(2880);
     return 0;
 }

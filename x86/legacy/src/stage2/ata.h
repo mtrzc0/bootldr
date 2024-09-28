@@ -250,7 +250,7 @@ void ata_delay(ata_channel_t channel, uint32_t ns);
  * @param channel The ATA channel (Primary or Secondary).
  * @return 0 if successful, -1 if an error occurred.
  */
-int8_t ata_drive_poll(ata_channel_t channel);;
+int8_t ata_drive_poll(ata_channel_t channel);
 
 void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf);
 

@@ -93,8 +93,8 @@ char *strfX(const char *str, uint32_t hex) {
     if (numl > 0) {
         for (size_t i = 0; i < numl; i+=2) {
             const uint8_t temp = hex >> 4 * i;
-            digits[i] = "0123456789ABCDEF"[temp >> 4];
-            digits[i+1] = "0123456789ABCDEF"[temp & 0x0F];
+            digits[i+1] = "0123456789ABCDEF"[temp >> 4];
+            digits[i] = "0123456789ABCDEF"[temp & 0x0F];
         }
     }
 

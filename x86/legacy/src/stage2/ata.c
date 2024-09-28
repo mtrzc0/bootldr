@@ -14,9 +14,12 @@ static uint8_t ata_ident_buf[ATA_IDENT_BUF_MAX] = { 0 };
 // TODO: add support for atapi Drives
 // static uint8_t atapi_packet[12] = { ATAPI_CMD_READ, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-// buffer for first sector read from disk
-// static uint32_t *ata_io_base_sect = (uint32_t *) 0xFFE00;
-static uint8_t ata_sect_buf[ATA_SECT_SIZE] = { 0 };
+// TODO: load 0x80 sector to valid HMA address from memory map
+// address in main memory of the first sector read from disk
+// it is high memory area (HMA) and is not used by the BIOS
+// it is safe to use this memory area, but it is an assumption
+// which should be made using valid memory map
+static uint8_t *ATA_SECT_BASE = (uint8_t *) 0x100000;
 
 void ata_init(void) {
     // detect pio ports
@@ -36,21 +39,29 @@ void ata_init(void) {
 }
 
 void ata_disk_read(uint16_t count) {
-    // LBA of first disk sector NOT read via BIOS call
-    const uint8_t ATA_BASE_LBA = 0x80;
+    for (uint8_t dev = 0; dev < ATA_DEVS_MAX; dev++) {
+        // LBA of first disk sector NOT read via BIOS call
+        const uint8_t ATA_BASE_LBA = 0x80;
+        if (!ata_devs[dev].reserved) {
+            continue;
+        }
+        if (ata_devs[dev].size < count || count == 0) {
+            log_fail("ATA driver: Disk too small or invalid sector count");
+            return;
+        }
+        log_info(strfd("ATA driver: Reading disk sectors from device: %d", dev));
+        // FIXME: first read sector at LBA 0x7F (127)
+        ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA-1, NULL);
 
-    // FIXME: first read sector at LBA 0x7F (127)
-    ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA-1, NULL);
+        // then begin reading the disk sectors starting from LBA 0x80
+        // otherwise all data from the LBA 0x80 will be 0x00
+        for (uint16_t i = 0; i < count; i++) {
+            ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA + i, ATA_SECT_BASE + i);
+        }
 
-    // then begin reading the disk sectors starting from LBA 0x80
-    // otherwise all data from the LBA 0x80 will be 0x00
-    log_info("ATA driver: Reading disk sectors");
-    for (uint16_t i = 0; i < count; i++) {
-        log_info(strfd("ATA driver: Reading sector: %d", ATA_BASE_LBA + i));
-        ata_read_sector(ATA_PRIMARY, ATA_BASE_LBA + i, ata_sect_buf);
+        dump_hex(ATA_SECT_BASE, ATA_SECT_SIZE/2);
+        log_ok("ATA driver: Disk read complete");
     }
-    log_ok("ATA driver: Disk read complete");
-    dump_hex(ata_sect_buf, ATA_SECT_SIZE/2);
 }
 
 void ata_read_sector(ata_channel_t channel, uint32_t LBA, uint8_t *buf) {

@@ -71,7 +71,7 @@ enpm:
     lgdt [gdtr]                     ; load GDT
 
     mov eax, cr0
-    or eax, 0x01                    ; enable protection bit in (Control reg)
+    or eax, 0x00000001              ; enable protection bit in (Control reg)
     mov cr0, eax
 
     popa
